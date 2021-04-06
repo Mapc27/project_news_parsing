@@ -9,7 +9,7 @@ https://drive.google.com/drive/folders/1b15yjrtGpKQdG5_Awp6abk3pZxktcOc_?usp=sha
 
 # Используемые технологии
 
-### Python 3.x.x
+### Python 3.7.x
     requests (pip install requests)
     BS4 (pip install beautifulsoup4)
     lxml (pip install lxml) <soup = BeautifulSoup(html, 'lxml')>
