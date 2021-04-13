@@ -7,7 +7,6 @@
 from abc import abstractmethod
 from datetime import datetime
 
-import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import lxml
@@ -112,6 +111,32 @@ class TatarInformParser(Parser):
             break
 
 
+class BusinessGazetaParser(Parser):
+    def __init__(self):
+        super().__init__()
+        self.url = 'https://www.business-gazeta.ru/'
+
+        self.get_data()
+
+    def get_last_news(self):
+        soup = BeautifulSoup(self.html, 'lxml')
+        all_news = soup.find_all(class_="last-news__item region1 type99")
+
+        return all_news
+
+    def cut_news(self):
+        news_html = self.get_last_news()
+
+        for new in news_html:
+            href = self.url[:-1:] + new.find(class_='last-news__link').get('href')
+            time = new.find(class_="last-news__time").text
+            title = new.find(class_="last-news__link").text
+            print(href, time, title)
+            break
+
+
 if __name__ == '__main__':
     ti = TatarInformParser()
     ti.cut_news()
+    bg = BusinessGazetaParser()
+    bg.cut_news()
