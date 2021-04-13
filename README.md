@@ -28,5 +28,5 @@ need to update
   - [`main.py`](source/main.py) - файл основная логика проекта
   - [`config.py`](source/config.py) - файл конфигураций
 - [`ChromeDriver`](ChromeDriver) - папка, в которой лежит драйвер Хром.
-    - [`chromedriver.exe`](ChromeDriver/chromedriver.exe) - драйвер Хром.
+    - [`chromedriver.exe`](source/chromedriver.exe) - драйвер Хром.
     
