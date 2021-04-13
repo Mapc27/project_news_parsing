@@ -51,7 +51,11 @@ class Parser:
         pass
 
     @abstractmethod
-    def cut_news(self):
+    def cut_news(self, new):
+        pass
+
+    @abstractmethod
+    def get_news_text(self, html):
         pass
 
     @property
@@ -100,15 +104,11 @@ class TatarInformParser(Parser):
 
         return all_news
 
-    def cut_news(self):
-        news_html = self.get_last_news()
-
-        for new in news_html:
-            href = new.get('href')
-            time = new.find(class_="ct-fc-item-time").text
-            title = new.find(class_="ct-fc-item-title-text").text
-            print(href, time, title)
-            break
+    def cut_news(self, news):
+        href = news.get('href')
+        time = news.find(class_="ct-fc-item-time").text
+        title = news.find(class_="ct-fc-item-title-text").text
+        print(href, time, title)
 
 
 class BusinessGazetaParser(Parser):
@@ -124,19 +124,20 @@ class BusinessGazetaParser(Parser):
 
         return all_news
 
-    def cut_news(self):
-        news_html = self.get_last_news()
-
-        for new in news_html:
-            href = self.url[:-1:] + new.find(class_='last-news__link').get('href')
-            time = new.find(class_="last-news__time").text
-            title = new.find(class_="last-news__link").text
-            print(href, time, title)
-            break
+    def cut_news(self, news):
+        href = self.url[:-1:] + news.find(class_='last-news__link').get('href')
+        time = news.find(class_="last-news__time").text
+        title = news.find(class_="last-news__link").text
+        print(href, time, title)
 
 
 if __name__ == '__main__':
-    ti = TatarInformParser()
-    ti.cut_news()
+    # ti = TatarInformParser()
     bg = BusinessGazetaParser()
-    bg.cut_news()
+    #
+    # for news in ti.get_last_news():
+    #     ti.cut_news(news)
+
+    for news in bg.get_last_news():
+        bg.cut_news(news)
+
