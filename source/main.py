@@ -5,3 +5,11 @@
 # Используются технологии мультипроцессинга и мультипоточности
 
 
+import parser
+
+
+if __name__ == '__main__':
+    ti = parser.TatarInformParser()
+    ti = parser.Parser()
+
+
