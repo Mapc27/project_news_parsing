@@ -55,7 +55,7 @@ class Parser:
         pass
 
     @abstractmethod
-    def get_news_text(self, html):
+    def get_news_text(self, url):
         pass
 
     @property
@@ -115,7 +115,6 @@ class BusinessGazetaParser(Parser):
     def __init__(self):
         super().__init__()
         self.url = 'https://www.business-gazeta.ru/'
-
         self.html = self.get_data(self.url)
 
     def get_last_news(self):
@@ -129,18 +128,23 @@ class BusinessGazetaParser(Parser):
         time = news.find(class_="last-news__time").text
         title = news.find(class_="last-news__link").text
         print(href, time, title)
+        return {'href': href,
+                'time': time,
+                'title': title}
 
-    def get_news_text(self, html):
-        pass
+    def get_news_text(self, url):
+        soup = BeautifulSoup(self.get_data(url), 'lxml')
+        news_text = soup.find('div', class_="articleBody").text
+        return news_text
 
 
 if __name__ == '__main__':
-    # ti = TatarInformParser()
+    ti = TatarInformParser()
     bg = BusinessGazetaParser()
-    #
-    # for news in ti.get_last_news():
-    #     ti.cut_news(news)
+
+    for news in ti.get_last_news():
+        ti.cut_news(news)
 
     for news_ in bg.get_last_news():
-        bg.cut_news(news_)
-
+        news_parameters = bg.cut_news(news_)
+        # print(bg.get_news_text(news_parameters['href'])
