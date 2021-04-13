@@ -24,14 +24,14 @@ class Parser:
         self._last_published_news_title: str
         self._last_published_news_time: datetime
 
-    def get_data(self):
+    def get_data(self, url):
         options = webdriver.ChromeOptions()
         options.headless = True
 
         driver = webdriver.Chrome(options=options)
-        driver.get(url=self._url)
+        driver.get(url=url)
 
-        self.html = driver.page_source
+        return driver.page_source
 
         # with requests.session() as s:
         #
@@ -96,7 +96,7 @@ class TatarInformParser(Parser):
         super().__init__()
         self.url = 'https://www.tatar-inform.ru/'
 
-        self.get_data()
+        self.html = self.get_data(self.url)
 
     def get_last_news(self):
         soup = BeautifulSoup(self.html, 'lxml')
@@ -116,7 +116,7 @@ class BusinessGazetaParser(Parser):
         super().__init__()
         self.url = 'https://www.business-gazeta.ru/'
 
-        self.get_data()
+        self.html = self.get_data(self.url)
 
     def get_last_news(self):
         soup = BeautifulSoup(self.html, 'lxml')
@@ -130,6 +130,9 @@ class BusinessGazetaParser(Parser):
         title = news.find(class_="last-news__link").text
         print(href, time, title)
 
+    def get_news_text(self, html):
+        pass
+
 
 if __name__ == '__main__':
     # ti = TatarInformParser()
@@ -138,6 +141,6 @@ if __name__ == '__main__':
     # for news in ti.get_last_news():
     #     ti.cut_news(news)
 
-    for news in bg.get_last_news():
-        bg.cut_news(news)
+    for news_ in bg.get_last_news():
+        bg.cut_news(news_)
 
