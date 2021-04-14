@@ -4,17 +4,20 @@
 
 # Парсеры под каждый сайт
 
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from datetime import datetime
 
+import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import lxml
+import config
+import json
 
 
 class Parser:
     """
-    Собирает информация с сайта новостей
+    Собирает информацию с сайта новостей
     """
     @abstractmethod
     def __init__(self):
@@ -25,26 +28,21 @@ class Parser:
         self._last_published_news_time: datetime
 
     def get_data(self, url):
-        options = webdriver.ChromeOptions()
-        options.headless = True
-
-        driver = webdriver.Chrome(options=options)
-        driver.get(url=url)
-
-        return driver.page_source
-
-        # with requests.session() as s:
+        # with selenium webdriver
+        # a very long time
+        # options = webdriver.ChromeOptions()
+        # options.headless = True
         #
-        #     response = s.get(self.url)
-        #     text = response.text
+        # driver = webdriver.Chrome(options=options)
+        # driver.get(url=url)
         #
-        # text = text.encode('utf-8')
-        # print(text)
-        # self.html = text
-        #
-        # r = requests.get(self.url)
-        # print(r.encoding)
-        # self.html = r.text
+        # return driver.page_source
+
+        # with requests
+        # very fast method
+
+        r = requests.get(url)
+        return r.content
 
     @abstractmethod
     def get_last_news(self):
@@ -91,33 +89,62 @@ class Parser:
         self._last_published_news_time = last_published_news_time
 
 
-class TatarInformParser(Parser):
+class TatarInformParser(Parser, ABC):
     def __init__(self):
         super().__init__()
-        self.url = 'https://www.tatar-inform.ru/'
+        self.url = config.TI_URL
 
-        self.html = self.get_data(self.url)
+    def get_last_news(self, page: int = 1):
+        """
+        gets last 15 news in one page
+        if you need to get more news, you should pass argument page
 
-    def get_last_news(self):
-        soup = BeautifulSoup(self.html, 'lxml')
-        all_news = soup.find_all(class_="ct-fc-item")
+        page = 1 is last news
+        :param page: number of page
+        :return: list of dictionaries
+                 dictionary - information about news
+        """
 
-        return all_news
+        response = self.get_data(config.TI_URL + str(page))
+
+        # from str does python object
+        list_of_dicts_news = json.loads(response.content)
+        # type(list_of_dictionaries) = list
+
+        return list_of_dicts_news
 
     def cut_news(self, news):
-        href = news.get('href')
-        time = news.find(class_="ct-fc-item-time").text
-        title = news.find(class_="ct-fc-item-title-text").text
-        print(href, time, title)
+        """
+        needs for break down news (one)
+        :param news: one news dict
+        :return:  (for now) tuple(id, published_date, title, text, lead, url)
+        """
+        # todo
+        pass
 
 
 class BusinessGazetaParser(Parser):
     def __init__(self):
         super().__init__()
-        self.url = 'https://www.business-gazeta.ru/'
-        self.html = self.get_data(self.url)
+        self.url = config.BG_URL
 
-    def get_last_news(self):
+    def get_last_news(self, page: int = 1):
+        """
+        gets last 20 news in one page
+        if you need to get more news, you should pass argument page
+
+        page = 1 is last news
+        :param page: number of page
+        :return: list of dictionaries
+                 dictionary - information about news
+        """
+
+        # теперь будет реализация через requests
+        # url изменился он есть в config нужно посмотреть и спарсить новости.
+        # думаю ниже код уже не будет работать
+        # нужно возвращать что-то по аналогии с татар-информ
+        # к url добавляем номер страницы (response = self.get_data(config.TI_URL + str(page)))
+
         soup = BeautifulSoup(self.html, 'lxml')
         all_news = soup.find_all(class_="last-news__item region1 type99")
 
@@ -140,11 +167,11 @@ class BusinessGazetaParser(Parser):
 
 if __name__ == '__main__':
     ti = TatarInformParser()
-    bg = BusinessGazetaParser()
 
-    for news in ti.get_last_news():
-        ti.cut_news(news)
+    response = requests.get(config.BG_URL + "2")
 
-    for news_ in bg.get_last_news():
-        news_parameters = bg.cut_news(news_)
-        # print(bg.get_news_text(news_parameters['href'])
+    soup = BeautifulSoup(response.text)
+
+    all_news = soup.find_all(class_="article-news")
+    print(all_news)
+    print(len(all_news))
