@@ -13,7 +13,7 @@ from selenium import webdriver
 import lxml
 import config
 import json
-from datetime import date
+from datetime import date, timedelta, datetime
 
 
 class Parser:
@@ -28,7 +28,7 @@ class Parser:
         self._last_published_news_title: str
         self._last_published_news_time: datetime
 
-    def get_data(self, url):
+    def get_data(self, url: str) -> bytes:
         # with selenium webdriver
         # a very long time
         # options = webdriver.ChromeOptions()
@@ -206,6 +206,50 @@ class KazanFirstParser(Parser, ABC):
         return useful_text
 
 
+class RealnoeVremyaParser(Parser, ABC):
+    def __init__(self):
+        super().__init__()
+        self.url = config.RV_URL
+
+    def create_url(self, day_month_year: str, page: int = 1) -> str:
+        return self.url + day_month_year + '?&page=' + page
+
+    @staticmethod
+    def set_current_date() -> str:
+        return date.today().strftime("%d.%m.%Y")
+
+    def previous_date(self, date) -> str:
+        pass
+
+    def border_of_pages(self, url: str) -> int:
+        """
+        :param url: url of a page for particular date
+        :return: a number of pages for particular date
+        """
+        soup = BeautifulSoup(self.get_data(url), 'lxml')
+        return int(soup.find(class_='pageNav').find_all('li')[-1].text)
+
+    def get_last_news(self, day_month_year: str, page: int = 1):
+        current_html = self.get_data(self.create_url(day_month_year, page))
+        soup = BeautifulSoup(current_html, 'lxml')
+        all_news = soup.find_all(class_='card withPic leftPic ')
+        return all_news
+
+    def cut_news(self, news: 'BeautifulSoup') -> dict:
+        href = news.find('a').get('href')
+        time = news.find(class_='border date').text
+        if len(time) == 5:
+            time = self.set_current_date() + ' ' + time
+        title = news.find('strong').text
+
+        return {'href': href,
+                'time': time,
+                'title': title}
+
+    def get_news_text(self, url):
+        pass
+
+
 if __name__ == '__main__':
     ti = TatarInformParser()
 
@@ -217,7 +261,7 @@ if __name__ == '__main__':
     print(all_news)
     print(len(all_news))
 
-    # an example of usage:
+    # an example of usage for Kazan First:
     kf = KazanFirstParser()
     for p in range(1, 11):
         a_news = kf.get_last_news(p)
@@ -225,3 +269,4 @@ if __name__ == '__main__':
             was_cut = kf.cut_news(n)
             print(kf.get_news_text(was_cut['href']))
 
+    # an example of usage for Realnoe Vremya:
