@@ -186,7 +186,7 @@ class KazanFirstParser(Parser, ABC):
             date_ = date.today().strftime('%d %B')
         time_and_date = date_ + ' ' + time
         title = news.find(class_='post__title').text
-        subtitle = news.find(class_='post__description').text
+        subtitle = news.find(class_='post__description').text  # здесь будет дублирование с текстом новости
         print(href, time_and_date, title, subtitle)
 
         return {'href': href,
@@ -195,7 +195,15 @@ class KazanFirstParser(Parser, ABC):
                 'subtitle': subtitle}
 
     def get_news_text(self, url):
-        pass
+        current_news_html = self.get_data(url)
+        soup = BeautifulSoup(current_news_html, 'lxml')
+        full_text = soup.find_all('p')
+        useful_text = ''
+        for paragraph in full_text:
+            if 'Читайте также:' in paragraph.text:
+                continue
+            useful_text += paragraph.text
+        return useful_text
 
 
 if __name__ == '__main__':
@@ -209,10 +217,11 @@ if __name__ == '__main__':
     print(all_news)
     print(len(all_news))
 
-    # example of usage:
+    # an example of usage:
     kf = KazanFirstParser()
     for p in range(1, 11):
         a_news = kf.get_last_news(p)
         for n in a_news:
-            kf.cut_news(n)
+            was_cut = kf.cut_news(n)
+            print(kf.get_news_text(was_cut['href']))
 
