@@ -183,7 +183,7 @@ class KazanFirstParser(Parser, ABC):
         try:
             date_ = news.find(class_='post-info__date').text
         except:
-            date_ = date.today().strftime('%d %b')
+            date_ = date.today().strftime('%d %B')
         time_and_date = date_ + ' ' + time
         title = news.find(class_='post__title').text
         subtitle = news.find(class_='post__description').text
