@@ -5,3 +5,4 @@
 
 TI_URL = 'https://www.tatar-inform.ru/api/matters.json?types[]=NewsItem&rubrics[]=&all_rubrics=&page='
 BG_URL = 'https://www.business-gazeta.ru/category/6/'
+KF_URL = 'https://kazanfirst.ru/news?content_only=1&page='

@@ -13,6 +13,7 @@ from selenium import webdriver
 import lxml
 import config
 import json
+from datetime import date
 
 
 class Parser:
@@ -165,6 +166,38 @@ class BusinessGazetaParser(Parser):
         return news_text
 
 
+class KazanFirstParser(Parser, ABC):
+    def __init__(self):
+        super().__init__()
+        self.url = config.KF_URL
+
+    def get_last_news(self, page: int = 1):
+        current_html = self.get_data(self.url + str(page))
+        soup = BeautifulSoup(current_html, 'lxml')
+        all_news = soup.find_all(class_='post-item column-list__item js-column-item')
+        return all_news
+
+    def cut_news(self, news: 'BeautifulSoup') -> dict:
+        href = news.get('href')
+        time = news.find(class_='post-info__time').text
+        try:
+            date_ = news.find(class_='post-info__date').text
+        except:
+            date_ = date.today().strftime('%d %b')
+        time_and_date = date_ + ' ' + time
+        title = news.find(class_='post__title').text
+        subtitle = news.find(class_='post__description').text
+        print(href, time_and_date, title, subtitle)
+
+        return {'href': href,
+                'time': time_and_date,
+                'title': title,
+                'subtitle': subtitle}
+
+    def get_news_text(self, url):
+        pass
+
+
 if __name__ == '__main__':
     ti = TatarInformParser()
 
@@ -175,3 +208,11 @@ if __name__ == '__main__':
     all_news = soup.find_all(class_="article-news")
     print(all_news)
     print(len(all_news))
+
+    # example of usage:
+    kf = KazanFirstParser()
+    for p in range(1, 11):
+        a_news = kf.get_last_news(p)
+        for n in a_news:
+            kf.cut_news(n)
+
