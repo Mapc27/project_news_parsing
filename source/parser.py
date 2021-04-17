@@ -317,3 +317,13 @@ if __name__ == '__main__':
             print(kf.get_news_text(was_cut['href']))
 
     # an example of usage for Realnoe Vremya:
+    rv = RealnoeVremyaParser()
+    date_ = rv.set_current_date()
+    for day in range(3):
+        current_day_url = rv.create_url(date_, page=1)
+        for p in range(1, rv.border_of_pages(current_day_url) + 1):
+            print(f'------------ news for {day} day, page {p} ------------')
+            last_news = rv.get_last_news(date_, page=p)
+            for n in last_news:
+                print(rv.cut_news(n))
+        date_ = rv.set_new_day(date_)
