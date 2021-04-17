@@ -212,8 +212,35 @@ class RealnoeVremyaParser(Parser):
         self.url = config.RV_URL
 
     def create_url(self, day_month_year: str, page: int = 1) -> str:
-        return self.url + day_month_year + '?&page=' + page
+        return self.url + day_month_year + '?&page=' + str(page)
 
+    # Yet is not used. Can be used to set uniform date
+    @staticmethod
+    def to_eng_month(rus_mon: str) -> str:
+        convert_dict = {'янв': '01',
+                        'фев': '02',
+                        'мар': '03',
+                        'апр': '04',
+                        'май': '05',
+                        'июн': '06',
+                        'июл': '07',
+                        'авг': '08',
+                        'сен': '09',
+                        'окт': '10',
+                        'ноя': '11',
+                        'дек': '12'}
+        try:
+            mon = convert_dict[rus_mon]
+        except:
+            mon = rus_mon
+        return mon
+
+    # Yet is not used. Can be used to set uniform date
+    def to_iso_date(self, rus_date: str):
+        month = self.to_eng_month(rus_date[3:6])
+        return
+
+    # yields a today's date in the website format
     @staticmethod
     def set_current_date() -> str:
         return date.today().strftime("%d.%m.%Y")
