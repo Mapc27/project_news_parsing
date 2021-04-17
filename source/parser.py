@@ -204,11 +204,21 @@ class EveningKazanParser(Parser):
                 self.page =0
                 return self.ls
             self.ls.append({'href': href,
-                       'title': title,
-                       'time': time})
+                            'title': title,
+                            'time': time})
         ek.change_page()
-
         return self.ls
+
+    # not the end result
+    def get_news_text(self, url):
+        soup = BeautifulSoup(ek.get_data(self.url), 'lxml')
+        all_text = soup.find_all('div', class_='field-content')
+        news_text = []
+        for text in all_text:
+            t = text.text
+            news_text.append(t)
+
+        return news_text
 
 
 if __name__ == '__main__':
@@ -217,13 +227,12 @@ if __name__ == '__main__':
     for k in range(len(cutnews)):
         print(cutnews[k])
 
+    ti = TatarInformParser()
 
-    # ti = TatarInformParser()
-    #
-    # response = requests.get(source.config.BG_URL + "2")
-    #
-    # soup = BeautifulSoup(response.text)
-    #
-    # all_news = soup.find_all(class_="article-news")
-    # print(all_news)
-    # print(len(all_news))
+    response = requests.get(source.config.BG_URL + "2")
+
+    soup = BeautifulSoup(response.text)
+
+    all_news = soup.find_all(class_="article-news")
+    print(all_news)
+    print(len(all_news))
