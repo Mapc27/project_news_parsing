@@ -269,20 +269,24 @@ class RealnoeVremyaParser(Parser):
         :return: a number of pages for particular date
         """
         soup = BeautifulSoup(self.get_data(url), 'lxml')
-        return int(soup.find(class_='pageNav').find_all('li')[-1].text)
+        try:
+            border = int(soup.find(class_='pageNav').find_all('li')[-1].text)
+        except:
+            border = 1   # execute when there is only one page
+        return border
 
     #  day_month_year has following appearance: dd.mm.yyyy, like on website
     def get_last_news(self, day_month_year: str, page: int = 1):
         current_html = self.get_data(self.create_url(day_month_year, page))
-        soup = BeautifulSoup(current_html, 'lxml')
-        all_news = soup.find_all(class_='card withPic leftPic ')
+        soup = BeautifulSoup(current_html, 'html.parser')
+        all_news = soup.find_all(class_='card withPic leftPic')
         return all_news
 
     def cut_news(self, news: 'BeautifulSoup') -> dict:
-        href = news.find('a').get('href')
+        href = 'https://realnoevremya.ru' + news.find('a').get('href')
         time = news.find(class_='border date').text
-        if len(time) == 5:
-            time = self.set_current_date() + ' ' + time
+        if len(time) == 5:   # Because time in today's news has following format: hh:mm. 5 symbols altogether.
+            time = str(date.today()) + ' ' + time
         title = news.find('strong').text
 
         return {'href': href,
