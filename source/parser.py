@@ -258,6 +258,11 @@ class RealnoeVremyaParser(Parser):
     def previous_date(date: 'datetime.date') -> 'datetime.date':
         return date - timedelta(days=1)
 
+    # first creates an instance of date class, then sets previous date, then formats back to website date
+    def set_new_day(self, website_date: str) -> str:
+        datetime_date = self.previous_date(self.date_from_appropriate(website_date))
+        return self.date_to_appropriate(datetime_date)
+
     def border_of_pages(self, url: str) -> int:
         """
         :param url: url of a page for particular date
