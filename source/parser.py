@@ -306,7 +306,10 @@ class Tatarstan24Parser(Parser):
         self.url = config.T2_URL
 
     def get_last_news(self, page: int = 1) -> list:
-        pass
+        html = self.get_data(self.url + str(page))
+        soup = BeautifulSoup(html, 'html.parser')
+        news_container = soup.find(class_='page-grid__content').find(class_='panel-group').find(class_='layout__body')
+        return news_container.find(class_='container-underline-list').find_all('li')
 
     def cut_news(self, news: 'BeautifulSoup') -> dict:
         pass
