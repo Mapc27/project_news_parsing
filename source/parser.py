@@ -28,7 +28,7 @@ class Parser:
         self._last_published_news_title: str
         self._last_published_news_time: datetime
 
-    def get_data(self, url: str) -> bytes:
+    def get_data(self, url: str) -> str:
         # with selenium webdriver
         # a very long time
         # options = webdriver.ChromeOptions()
@@ -43,7 +43,7 @@ class Parser:
         # very fast method
 
         r = requests.get(url)
-        return r.content
+        return r.text
 
     @abstractmethod
     def get_last_news(self):
