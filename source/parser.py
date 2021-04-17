@@ -11,7 +11,7 @@ import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import lxml
-import config
+import source.config
 import json
 
 
@@ -92,7 +92,7 @@ class Parser:
 class TatarInformParser(Parser, ABC):
     def __init__(self):
         super().__init__()
-        self.url = config.TI_URL
+        self.url = source.config.TI_URL
 
     def get_last_news(self, page: int = 1):
         """
@@ -105,7 +105,7 @@ class TatarInformParser(Parser, ABC):
                  dictionary - information about news
         """
 
-        response = self.get_data(config.TI_URL + str(page))
+        response = self.get_data(source.config.TI_URL + str(page))
 
         # from str does python object
         list_of_dicts_news = json.loads(response.content)
@@ -126,7 +126,7 @@ class TatarInformParser(Parser, ABC):
 class BusinessGazetaParser(Parser):
     def __init__(self):
         super().__init__()
-        self.url = config.BG_URL
+        self.url = source.config.BG_URL
 
     def get_last_news(self, page: int = 1):
         """
@@ -165,13 +165,45 @@ class BusinessGazetaParser(Parser):
         return news_text
 
 
+class EveningKazanParser:
+    def __init__(self):
+        super().__init__()
+        self.url = source.config.EK_URL
+
+    def get_data(self, url, i=0):
+        r = requests.get(f'{url}+{i}')
+        return r.content
+
+    def get_last_news(self, page: int = 1):
+        soup = BeautifulSoup(ek.get_data(self.url), 'lxml')
+        all_news = soup.find_all('div', class_='views-field-title')
+
+        return all_news
+
+
+    def cut_news(self, news):
+        ls = []
+        for new in news:
+            href = self.url[:28] + new.find('a').get('href')
+            title = new.find('a').text
+            ls.append({'href': href,
+                       'title': title})
+        return ls
+
+
 if __name__ == '__main__':
-    ti = TatarInformParser()
+    ek = EveningKazanParser()
+    # print(ek.get_data(source.config.EK_URL))
+    # print(ek.get_last_news())
+    for k in range(len(ek.cut_news(ek.get_last_news()))):
+        print(ek.cut_news(ek.get_last_news())[k])
 
-    response = requests.get(config.BG_URL + "2")
-
-    soup = BeautifulSoup(response.text)
-
-    all_news = soup.find_all(class_="article-news")
-    print(all_news)
-    print(len(all_news))
+    # ti = TatarInformParser()
+    #
+    # response = requests.get(source.config.BG_URL + "2")
+    #
+    # soup = BeautifulSoup(response.text)
+    #
+    # all_news = soup.find_all(class_="article-news")
+    # print(all_news)
+    # print(len(all_news))
