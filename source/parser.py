@@ -218,8 +218,18 @@ class RealnoeVremyaParser(Parser, ABC):
     def set_current_date() -> str:
         return date.today().strftime("%d.%m.%Y")
 
-    def previous_date(self, date) -> str:
-        pass
+    @staticmethod
+    def date_from_appropriate(date_on_website: str) -> 'datetime.date':
+        date_list = date_on_website.split('.')
+        return date(year=int(date_list[2]), month=int(date_list[1]), day=int(date_list[0]))
+
+    @staticmethod
+    def date_to_appropriate(date: 'datetime.date') -> str:
+        return date.strftime("%d.%m.%Y")
+
+    @staticmethod
+    def previous_date(date: 'datetime.date') -> 'datetime.date':
+        return date - timedelta(days=1)
 
     def border_of_pages(self, url: str) -> int:
         """
@@ -229,6 +239,7 @@ class RealnoeVremyaParser(Parser, ABC):
         soup = BeautifulSoup(self.get_data(url), 'lxml')
         return int(soup.find(class_='pageNav').find_all('li')[-1].text)
 
+    #  day_month_year has following appearance: dd.mm.yyyy, like on website
     def get_last_news(self, day_month_year: str, page: int = 1):
         current_html = self.get_data(self.create_url(day_month_year, page))
         soup = BeautifulSoup(current_html, 'lxml')
