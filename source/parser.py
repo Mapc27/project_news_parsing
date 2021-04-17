@@ -206,7 +206,7 @@ class KazanFirstParser(Parser, ABC):
         return useful_text
 
 
-class RealnoeVremyaParser(Parser, ABC):
+class RealnoeVremyaParser(Parser):
     def __init__(self):
         super().__init__()
         self.url = config.RV_URL
