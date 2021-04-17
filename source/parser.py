@@ -165,18 +165,24 @@ class BusinessGazetaParser(Parser):
         return news_text
 
 
-class EveningKazanParser:
+class EveningKazanParser(Parser):
     def __init__(self):
         super().__init__()
         self.url = source.config.EK_URL
-        self._last_published_news_title = 'В Нижнекамске нашли школьника, который вышел из дома и пропал'
-        self._last_published_news_time = '17.04.21 10:17'
+        self.page = 0
+        self.ls = []
+        self._last_published_news_title = 'Мишустин распорядился выплатить деньги туристам, чьи путевки, купленные до конца марта 2020 года, были аннулированы'
+        self._last_published_news_time = '16.04.21 09:17'
 
-    def get_data(self, url, i=0):
-        r = requests.get(f'{url}+{i}')
+    def get_data(self, url):
+        r = requests.get(f'{url}+{str(self.page)}')
         return r.content
 
-    def get_last_news(self, page: int = 1):
+    def change_page(self):
+        self.page += 1
+        ek.cut_news(ek.get_last_news())
+
+    def get_last_news(self):
         soup = BeautifulSoup(ek.get_data(self.url), 'lxml')
         all_news = soup.find_all('div', class_='views-field-title')
 
@@ -188,31 +194,29 @@ class EveningKazanParser:
 
         return all_time
 
-    def cut_news(self, news, times):
-        ls = []
+    def cut_news(self, news):
+        times = ek.get_time()
         for j in range(len(news)-3):
             href = self.url[:28] + news[j].find('a').get('href')
             title = news[j].find('a').text
-            date_time = times[j].find('span').text
-            if title != self._last_published_news_title or date_time != self._last_published_news_time:
-                date_time = date_time.split(' ')
-                date = date_time[0]
-                time = date_time[1]
-                ls.append({'href': href,
-                           'title': title,
-                           'date': date,
-                           'time': time})
-            else:
-                return ls
-        return ls
+            time = times[j].find('span').text
+            if title == self._last_published_news_title and time == self._last_published_news_time:
+                self.page =0
+                return self.ls
+            self.ls.append({'href': href,
+                       'title': title,
+                       'time': time})
+        ek.change_page()
+
+        return self.ls
 
 
 if __name__ == '__main__':
     ek = EveningKazanParser()
-    # print(ek.get_data(source.config.EK_URL))
-    # print(ek.get_last_news())
-    for k in range(len(ek.cut_news(ek.get_last_news(), ek.get_time()))):
-        print(ek.cut_news(ek.get_last_news(), ek.get_time())[k])
+    cutnews = ek.cut_news(ek.get_last_news())
+    for k in range(len(cutnews)):
+        print(cutnews[k])
+
 
     # ti = TatarInformParser()
     #
