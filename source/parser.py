@@ -305,6 +305,10 @@ class Tatarstan24Parser(Parser):
         super().__init__()
         self.url = config.T2_URL
 
+    # TODO: will return date and time in the uniform format
+    def unify_time(self, any_time: str) -> str:
+        return any_time
+
     def get_last_news(self, page: int = 1) -> list:
         html = self.get_data(self.url + str(page))
         soup = BeautifulSoup(html, 'html.parser')
@@ -312,7 +316,16 @@ class Tatarstan24Parser(Parser):
         return news_container.find(class_='container-underline-list').find_all('li')
 
     def cut_news(self, news: 'BeautifulSoup') -> dict:
-        pass
+        href = news.find('a').get('href')
+        time = news.find(class_='media-list__date').text.strip()
+        uni_time = self.unify_time(time)
+        title = news.find('a').text.strip()
+        subtitle = news.find(class_='media-list__text').text.strip()
+
+        return {'href': href,
+                'time': uni_time,
+                'title': title,
+                'subtitle': subtitle}
 
     def get_news_text(self, url) -> str:
         pass
