@@ -169,6 +169,8 @@ class EveningKazanParser:
     def __init__(self):
         super().__init__()
         self.url = source.config.EK_URL
+        self._last_published_news_title = 'В Нижнекамске нашли школьника, который вышел из дома и пропал'
+        self._last_published_news_time = '17.04.21 10:17'
 
     def get_data(self, url, i=0):
         r = requests.get(f'{url}+{i}')
@@ -191,10 +193,17 @@ class EveningKazanParser:
         for j in range(len(news)-3):
             href = self.url[:28] + news[j].find('a').get('href')
             title = news[j].find('a').text
-            time = times[j].find('span').text
-            ls.append({'href': href,
-                       'title': title,
-                       'time': time})
+            date_time = times[j].find('span').text
+            if title != self._last_published_news_title or date_time != self._last_published_news_time:
+                date_time = date_time.split(' ')
+                date = date_time[0]
+                time = date_time[1]
+                ls.append({'href': href,
+                           'title': title,
+                           'date': date,
+                           'time': time})
+            else:
+                return ls
         return ls
 
 
