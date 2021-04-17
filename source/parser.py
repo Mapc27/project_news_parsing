@@ -245,15 +245,18 @@ class RealnoeVremyaParser(Parser):
     def set_current_date() -> str:
         return date.today().strftime("%d.%m.%Y")
 
+    # converts from a website date to a datetime instance
     @staticmethod
     def date_from_appropriate(date_on_website: str) -> 'datetime.date':
         date_list = date_on_website.split('.')
         return date(year=int(date_list[2]), month=int(date_list[1]), day=int(date_list[0]))
 
+    # converts from a datetime instance to a website date
     @staticmethod
     def date_to_appropriate(date: 'datetime.date') -> str:
         return date.strftime("%d.%m.%Y")
 
+    # yields a previous date as an instance of class date
     @staticmethod
     def previous_date(date: 'datetime.date') -> 'datetime.date':
         return date - timedelta(days=1)
