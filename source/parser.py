@@ -300,6 +300,21 @@ class RealnoeVremyaParser(Parser):
         pass
 
 
+class Tatarstan24Parser(Parser):
+    def __init__(self):
+        super().__init__()
+        self.url = config.T2_URL
+
+    def get_last_news(self, page: int = 1) -> list:
+        pass
+
+    def cut_news(self, news: 'BeautifulSoup') -> dict:
+        pass
+
+    def get_news_text(self, url) -> str:
+        pass
+
+
 if __name__ == '__main__':
     ti = TatarInformParser()
 

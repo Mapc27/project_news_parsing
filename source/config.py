@@ -7,3 +7,4 @@ TI_URL = 'https://www.tatar-inform.ru/api/matters.json?types[]=NewsItem&rubrics[
 BG_URL = 'https://www.business-gazeta.ru/category/6/'
 KF_URL = 'https://kazanfirst.ru/news?content_only=1&page='
 RV_URL = 'https://realnoevremya.ru/news/archive/'
+T2_URL = 'http://www.tatarstan24.tv/news/page/'
