@@ -327,8 +327,11 @@ class Tatarstan24Parser(Parser):
                 'title': title,
                 'subtitle': subtitle}
 
-    def get_news_text(self, url) -> str:
-        pass
+    def get_news_text(self, url:str) -> str:
+        html = self.get_data(url)
+        soup = BeautifulSoup(html, 'html.parser')
+        text = soup.find(class_='page-main__text').text
+        return text
 
 
 if __name__ == '__main__':
