@@ -180,14 +180,21 @@ class EveningKazanParser:
 
         return all_news
 
+    def get_time(self):
+        soup = BeautifulSoup(ek.get_data(self.url), 'lxml')
+        all_time = soup.find_all('div', class_='views-field-created')
 
-    def cut_news(self, news):
+        return all_time
+
+    def cut_news(self, news, times):
         ls = []
-        for new in news:
-            href = self.url[:28] + new.find('a').get('href')
-            title = new.find('a').text
+        for j in range(len(news)-3):
+            href = self.url[:28] + news[j].find('a').get('href')
+            title = news[j].find('a').text
+            time = times[j].find('span').text
             ls.append({'href': href,
-                       'title': title})
+                       'title': title,
+                       'time': time})
         return ls
 
 
@@ -195,8 +202,8 @@ if __name__ == '__main__':
     ek = EveningKazanParser()
     # print(ek.get_data(source.config.EK_URL))
     # print(ek.get_last_news())
-    for k in range(len(ek.cut_news(ek.get_last_news()))):
-        print(ek.cut_news(ek.get_last_news())[k])
+    for k in range(len(ek.cut_news(ek.get_last_news(), ek.get_time()))):
+        print(ek.cut_news(ek.get_last_news(), ek.get_time())[k])
 
     # ti = TatarInformParser()
     #
