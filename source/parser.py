@@ -390,7 +390,7 @@ class EveningKazanParser(Parser):
         return news_text
 
 
-class TNVparser(Parser):
+class TNVParser(Parser):
     def __init__(self):
         super().__init__()
         self.url = source.config.TNV_URL
@@ -436,6 +436,19 @@ class TNVparser(Parser):
 
         return ls
 
+    # not work correct
+    def get_news_text(self):
+        textes = []
+        news = self.get_last_news()
+        for new in news:
+            href = self.url[:14] + new.find(class_='news-page-list__content').find('a').get('href')
+            soup = BeautifulSoup(self.get_data(href), 'lxml')
+            all_text = soup.find_all('div', class_='js-image-description')
+            for text in all_text:
+                textes.append(text)
+
+        return text
+
 
 if __name__ == '__main__':
     # ek = EveningKazanParser()
@@ -443,9 +456,11 @@ if __name__ == '__main__':
     # for k in range(len(cutnews)):
     #     print(cutnews[k])
 
-    tnv = TNVparser()
+    tnv = TNVParser()
     for k in tnv.cut_news(tnv.get_last_news()):
         print(k)
+    for n in tnv.get_news_text():
+        print(n)
 
     # ti = TatarInformParser()
     #
