@@ -10,4 +10,5 @@ import parser
 
 if __name__ == '__main__':
     ti = parser.TatarInformParser()
-
+    for news in ti.get_last_news(1):
+        print(ti.cut_news(news))

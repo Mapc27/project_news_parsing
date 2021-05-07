@@ -10,11 +10,9 @@ https://drive.google.com/drive/folders/1b15yjrtGpKQdG5_Awp6abk3pZxktcOc_?usp=sha
 # Используемые технологии
 
 ### Python 3.7.x
-    requests (pip install requests)
-    BS4 (pip install beautifulsoup4)
-    lxml (pip install lxml) <soup = BeautifulSoup(html, 'lxml')>
-    PostgreSQL
-    Selenium (pip install Selenium)
+    scrapy (pip install scrapy)
+    SQLite
+    SQLAlchemy
 
 ### Database SQLAlchemy
 
@@ -26,7 +24,7 @@ need to update
   - [`match.py`](source/match.py) - файл сравнение новостей
   - [`parser.py`](source/parser.py) - файл с кодом сбора новостей
   - [`main.py`](source/main.py) - файл основная логика проекта
-  - [`config.py`](source/config.py) - файл конфигураций
-- [`ChromeDriver`](ChromeDriver) - папка, в которой лежит драйвер Хром.
-    - [`chromedriver.exe`](source/chromedriver.exe) - драйвер Хром.
-    
+- [`news`](news) - папка scrapy для парсинга
+  - [`spiders`](news/spiders) - папка с пауками scrapy
+    - [`config.py`](news/spiders/config.py) - файл конфигураций для пауков
+  

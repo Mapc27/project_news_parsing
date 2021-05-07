@@ -5,15 +5,12 @@
 # Парсеры под каждый сайт
 
 from abc import abstractmethod, ABC
-from datetime import datetime
 
 import requests
 from bs4 import BeautifulSoup
-from selenium import webdriver
-import lxml
-import source.config
-import json
 from datetime import date, timedelta, datetime
+
+from news.spiders import config
 
 
 class Parser:
@@ -29,19 +26,6 @@ class Parser:
         self._last_published_news_time: datetime
 
     def get_data(self, url: str) -> str:
-        # with selenium webdriver
-        # a very long time
-        # options = webdriver.ChromeOptions()
-        # options.headless = True
-        #
-        # driver = webdriver.Chrome(options=options)
-        # driver.get(url=url)
-        #
-        # return driver.page_source
-
-        # with requests
-        # very fast method
-
         r = requests.get(url)
         return r.text
 
@@ -93,41 +77,35 @@ class Parser:
 class TatarInformParser(Parser, ABC):
     def __init__(self):
         super().__init__()
-        self.url = source.config.TI_URL
+        self.url = config.TI_URL
 
     def get_last_news(self, page: int = 1):
-        """
-        gets last 15 news in one page
-        if you need to get more news, you should pass argument page
+        html = self.get_data(self.url + str(page))
 
-        page = 1 is last news
-        :param page: number of page
-        :return: list of dictionaries
-                 dictionary - information about news
-        """
+        soup = BeautifulSoup(html, 'lxml')
+        all_news = soup.find_all(class_='underline-list__item')
 
-        response = self.get_data(source.config.TI_URL + str(page))
-
-        # from str does python object
-        list_of_dicts_news = json.loads(response.content)
-        # type(list_of_dictionaries) = list
-
-        return list_of_dicts_news
+        return all_news
 
     def cut_news(self, news):
-        """
-        needs for break down news (one)
-        :param news: one news dict
-        :return:  (for now) tuple(id, published_date, title, text, lead, url)
-        """
-        # todo
-        pass
+        date_ = str(news.find(class_='list-item__date').text).strip()
+        n = date_.find('\n')
+        date_ = date_[:n] + date_[n+1:]
+
+        n = date_.find('                                       ')
+        date_ = date_[:n] + date_[n+1:]
+
+        # date_ = datetime.strptime(date_, "")
+
+        return date_
+
+
 
 
 class BusinessGazetaParser(Parser):
     def __init__(self):
         super().__init__()
-        self.url = source.config.BG_URL
+        self.url = config.BG_URL
 
     def get_last_news(self, page: int = 1):
         """
@@ -337,7 +315,7 @@ class Tatarstan24Parser(Parser):
 class EveningKazanParser(Parser):
     def __init__(self):
         super().__init__()
-        self.url = source.config.EK_URL
+        self.url = config.EK_URL
         self.page = 0
         self.ls = []
         self._last_published_news_title = 'Мишустин распорядился выплатить деньги туристам, чьи путевки, купленные до конца марта 2020 года, были аннулированы'
@@ -393,7 +371,7 @@ class EveningKazanParser(Parser):
 class TNVParser(Parser):
     def __init__(self):
         super().__init__()
-        self.url = source.config.TNV_URL
+        self.url = config.TNV_URL
 
     def get_last_news(self):
         soup = BeautifulSoup(self.get_data(self.url), 'lxml')
@@ -453,8 +431,8 @@ class TNVParser(Parser):
 class ProKazanParser(Parser):
     def __init__(self):
         super().__init__()
-        self.url1 = source.config.KZN_PK_URL
-        self.url2 = source.config.RU_PK_URL
+        self.url1 = config.KZN_PK_URL
+        self.url2 = config.RU_PK_URL
 
     def get_last_news_tat(self):
         soup = BeautifulSoup(self.get_data(self.url1), 'lxml')
@@ -533,60 +511,60 @@ class ProKazanParser(Parser):
         return ls
 
 
-if __name__ == '__main__':
-    ek = EveningKazanParser()
-    cutnews = ek.cut_news(ek.get_last_news())
-    for k in range(len(cutnews)):
-        print(cutnews[k])
-
-    tnv = TNVParser()
-    for k in tnv.cut_news(tnv.get_last_news()):
-        print(k)
-    for n in tnv.get_news_text():
-        print(n)
-
-    pk = ProKazanParser()
-    for k in pk.cut_news_tat(pk.get_last_news_tat()):
-        print(k)
-    for k in pk.cut_news_rus(pk.get_last_news_rus()):
-        print(k)
-
-    ti = TatarInformParser()
-
-    response = requests.get(source.config.BG_URL + "2")
-
-    soup = BeautifulSoup(response.text)
-
-    all_news = soup.find_all(class_="article-news")
-    print(all_news)
-    print(len(all_news))
-
-    # an example of usage for Kazan First:
-    kf = KazanFirstParser()
-    for p in range(1, 11):
-        a_news = kf.get_last_news(p)
-        for n in a_news:
-            was_cut = kf.cut_news(n)
-            print(kf.get_news_text(was_cut['href']))
-
-    # an example of usage for Realnoe Vremya:
-    rv = RealnoeVremyaParser()
-    date_ = rv.set_current_date()
-    for day in range(3):
-        current_day_url = rv.create_url(date_, page=1)
-        for p in range(1, rv.border_of_pages(current_day_url) + 1):
-            print(f'------------ news for {day} day, page {p} ------------')
-            last_news = rv.get_last_news(date_, page=p)
-            for n in last_news:
-                print(rv.cut_news(n))
-        date_ = rv.set_new_day(date_)
-
-    # an example of usage Tatarstan24Parser
-    t24 = Tatarstan24Parser()
-    for p in range(2):
-        all_n = t24.get_last_news(p)
-        for n in all_n:
-            was_cut = t24.cut_news(n)
-            print(was_cut)
-            print("------------TEXT NEWS------------")
-            print(t24.get_news_text(was_cut['href']))
+# if __name__ == '__main__':
+    # ek = EveningKazanParser()
+    # cutnews = ek.cut_news(ek.get_last_news())
+    # for k in range(len(cutnews)):
+    #     print(cutnews[k])
+    #
+    # tnv = TNVParser()
+    # for k in tnv.cut_news(tnv.get_last_news()):
+    #     print(k)
+    # for n in tnv.get_news_text():
+    #     print(n)
+    #
+    # pk = ProKazanParser()
+    # for k in pk.cut_news_tat(pk.get_last_news_tat()):
+    #     print(k)
+    # for k in pk.cut_news_rus(pk.get_last_news_rus()):
+    #     print(k)
+    #
+    # ti = TatarInformParser()
+    #
+    # response = requests.get(config.BG_URL + "2")
+    #
+    # soup = BeautifulSoup(response.text)
+    #
+    # all_news = soup.find_all(class_="article-news")
+    # print(all_news)
+    # print(len(all_news))
+    #
+    # # an example of usage for Kazan First:
+    # kf = KazanFirstParser()
+    # for p in range(1, 11):
+    #     a_news = kf.get_last_news(p)
+    #     for n in a_news:
+    #         was_cut = kf.cut_news(n)
+    #         print(kf.get_news_text(was_cut['href']))
+    #
+    # # an example of usage for Realnoe Vremya:
+    # rv = RealnoeVremyaParser()
+    # date_ = rv.set_current_date()
+    # for day in range(3):
+    #     current_day_url = rv.create_url(date_, page=1)
+    #     for p in range(1, rv.border_of_pages(current_day_url) + 1):
+    #         print(f'------------ news for {day} day, page {p} ------------')
+    #         last_news = rv.get_last_news(date_, page=p)
+    #         for n in last_news:
+    #             print(rv.cut_news(n))
+    #     date_ = rv.set_new_day(date_)
+    #
+    # # an example of usage Tatarstan24Parser
+    # t24 = Tatarstan24Parser()
+    # for p in range(2):
+    #     all_n = t24.get_last_news(p)
+    #     for n in all_n:
+    #         was_cut = t24.cut_news(n)
+    #         print(was_cut)
+    #         print("------------TEXT NEWS------------")
+    #         print(t24.get_news_text(was_cut['href']))
