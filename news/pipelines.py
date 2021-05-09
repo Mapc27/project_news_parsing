@@ -15,10 +15,14 @@ class NewsPipeline:
         self.lst = []
 
     def process_item(self, item, spider):
+        # сюда попадает каждая новость с паука в item
+        # нужно добавить метод добавления новости в БД
         self.lst.append(item)
         return item
 
     def close_spider(self, spider):
+        # вызывается, когда паук закрывается
+        # есть также метод, вызывающийся, когда паук открывается
         for i in range(len(self.lst)-1):
             for j in range(i, len(self.lst)):
                 if datetime.datetime.strptime(self.lst[i]['published_date'], "%Y-%m-%d %H:%M:%S") <\

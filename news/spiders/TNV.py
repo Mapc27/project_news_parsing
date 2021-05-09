@@ -8,7 +8,7 @@ from scrapy.utils.project import get_project_settings
 from config import TNV_URL, months_names
 
 
-not_needed = ['Читайте также', 'Фото', 'Видео', 'Автор']
+not_needed = ['Читайте также', 'Фото:', 'Видео', 'Автор']
 
 
 class TNVSpider(scrapy.Spider):
@@ -61,10 +61,11 @@ class TNVSpider(scrapy.Spider):
         href = response.url
 
         array = response.css('div.js-image-description ::text').extract()
-        for i in range(len(array)):
-            for j in not_needed:
-                if j in array[i] or j.lower() in array[i]:
-                    array[i] = ''
+
+        # for i in range(len(array)):
+        #     for j in not_needed:
+        #         if j in array[i] or j.lower() in array[i]:
+        #             array[i] = ''
 
         text = ' '.join(array).strip().replace(u'\r', u'').replace(u'\n', u'').replace(u'\t', u'')
         text = unicodedata.normalize("NFKD", text)
@@ -78,7 +79,10 @@ class TNVSpider(scrapy.Spider):
 
 
 if __name__ == '__main__':
+    # создаём process
+    # get_project_settings() передаёт settings в том числе файл pipeline.py, в который уходят данные с парсинга
     process = CrawlerProcess(get_project_settings())
+    # переда1м параметр limit_published_date, datetime. Новости будут браться с datetime > limit_published_date
     process.crawl(TNVSpider,
-                  limit_published_date=datetime.datetime(2021, 5, 6, 21, 4))
+                  limit_published_date=datetime.datetime(2021, 5, 5, 21, 4))
     process.start()
