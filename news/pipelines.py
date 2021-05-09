@@ -5,6 +5,8 @@
 
 
 # useful for handling different item types with a single interface
+import datetime
+
 from itemadapter import ItemAdapter
 
 
@@ -17,5 +19,10 @@ class NewsPipeline:
         return item
 
     def close_spider(self, spider):
+        for i in range(len(self.lst)-1):
+            for j in range(i, len(self.lst)):
+                if datetime.datetime.strptime(self.lst[i]['published_date'], "%Y-%m-%d %H:%M:%S") <\
+                        datetime.datetime.strptime(self.lst[j]['published_date'], "%Y-%m-%d %H:%M:%S"):
+                    self.lst[i],  self.lst[j] = self.lst[j], self.lst[i]
         for i in self.lst:
             print(i)

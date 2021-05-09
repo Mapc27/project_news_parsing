@@ -1,4 +1,5 @@
 import datetime
+import unicodedata
 
 import scrapy
 from scrapy.crawler import CrawlerProcess
@@ -43,12 +44,14 @@ class Tatarstan24Spider(scrapy.Spider):
             self.completed = True
             return
 
-        title = response.css('h1.page-main__head::text').extract_first().strip().replace(u'\xa0', u' ')
+        title = response.css('h1.page-main__head::text').extract_first().strip().replace(u'\r', u'').replace(u'\n', u'')
+        title = unicodedata.normalize("NFKD", title)
 
         href = response.url
 
         text = ' '.join(response.css('div.page-main__text').css('p ::text')
-                        .extract()).strip().replace(u'\xa0', u' ').replace(u'\t', u'')
+                        .extract()).strip().replace(u'\r', u'').replace(u'\n', u'')
+        text = unicodedata.normalize("NFKD", text)
 
         yield {
             'published_date': published_date.__str__(),

@@ -1,4 +1,5 @@
 import datetime
+import unicodedata
 
 import scrapy
 from scrapy.crawler import CrawlerProcess
@@ -39,7 +40,7 @@ class TatarInformSpider(scrapy.Spider):
         published_date = published_date.replace(u'\xa0\xa0', u' ')
 
         month = published_date.split(' ')[1]
-        replace = months_names.index(month)
+        replace = months_names.index(month.lower())
 
         published_date = published_date.replace(month, str(replace))
         published_date = datetime.datetime.strptime(published_date, "%d %m %Y %H:%M")
@@ -48,11 +49,15 @@ class TatarInformSpider(scrapy.Spider):
             self.completed = True
             return
 
-        title = response.css('h1.page-main__title::text').extract_first().strip().replace(u'\xa0', u' ')
+        title = response.css('h1.page-main__title::text').extract_first().strip()\
+            .replace(u'\r', u'').replace(u'\n', u'')
+        title = unicodedata.normalize("NFKD", title)
 
         href = response.url
 
-        text = ' '.join(response.css('div.page-main__text').css('p ::text').extract()).strip().replace(u'\xa0', u' ')
+        text = ' '.join(response.css('div.page-main__text').css('p ::text').extract()).strip()\
+            .replace(u'\r', u'').replace(u'\n', u'')
+        text = unicodedata.normalize("NFKD", text)
 
         yield {
             'published_date': published_date.__str__(),

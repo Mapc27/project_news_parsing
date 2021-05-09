@@ -5,14 +5,13 @@ import scrapy
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
-from config import RU_PK_URL, KZN_PK_URL
+from config import EK_URL
 
 
-class ProKazanSpider(scrapy.Spider):
-    name = 'ProKazan'
-    start_urls = ['https://prokazan.ru']
-    ru_url = RU_PK_URL
-    kzn_url = KZN_PK_URL
+class EveningKazanSpider(scrapy.Spider):
+    name = 'EveningKazan'
+    start_urls = ['https://www.evening-kazan.ru']
+    url = EK_URL
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -20,11 +19,10 @@ class ProKazanSpider(scrapy.Spider):
         self.limit_published_date = kwargs.get('limit_published_date', None)
 
     def start_requests(self):
-        yield scrapy.Request(self.ru_url + '1', callback=self.parse)
-        yield scrapy.Request(self.kzn_url + '1', callback=self.parse)
+        yield scrapy.Request(self.url + '0', callback=self.parse)
 
     def parse(self, response, **kwargs):
-        for news in response.css('div.news-mid__content'):
+        for news in response.css('div.view-content').css('div.views-field-title'):
 
             href = news.css('a::attr(href)').extract_first()
             href = self.start_urls[0] + href
@@ -35,28 +33,25 @@ class ProKazanSpider(scrapy.Spider):
                 break
 
         if not self.completed:
-            n = response.url.rfind('/')
-            current_page = int(response.url[n+1:])
-            url = response.url[:n+1]
-            yield response.follow(url + str(current_page + 1), callback=self.parse)
-
-        self.completed = False
+            current_page = int(response.url.split("=")[-1])
+            yield response.follow(self.url + str(current_page + 1), callback=self.parse)
 
     def parse_news(self, response):
-        published_date = response.css('span.article-info__date::text').extract_first().strip()
+        published_date = response.css('div.heading--meta-wrap').css('div.submitted::text').extract_first().strip()
 
-        published_date = datetime.datetime.strptime(published_date, "%d.%m.%Y, %H:%M")
+        published_date = datetime.datetime.strptime(published_date, "%d.%m.%y %H:%M")
 
         if published_date <= self.limit_published_date:
             self.completed = True
             return
 
-        title = response.css('h1.article__name::text').extract_first().strip().replace(u'\r', u'').replace(u'\n', u'')
+        title = response.css('div.sidebar-both').css('h1.title::text')\
+            .extract_first().strip().replace(u'\r', u'').replace(u'\n', u'')
         title = unicodedata.normalize("NFKD", title)
 
         href = response.url
 
-        text = ' '.join(response.css('div.ArticleContent').css('p ::text')
+        text = ' '.join(response.css('div.sidebar-both').css('div.content').css('p ::text')
                         .extract()).strip().replace(u'\r', u'').replace(u'\n', u'')
         text = unicodedata.normalize("NFKD", text)
 
@@ -70,6 +65,6 @@ class ProKazanSpider(scrapy.Spider):
 
 if __name__ == '__main__':
     process = CrawlerProcess(get_project_settings())
-    process.crawl(ProKazanSpider,
-                  limit_published_date=datetime.datetime(2021, 5, 3, 21, 4))
+    process.crawl(EveningKazanSpider,
+                  limit_published_date=datetime.datetime(2021, 5, 8, 21, 4))
     process.start()

@@ -1,4 +1,5 @@
 import datetime
+import unicodedata
 
 import scrapy
 from config import RV_URL
@@ -43,12 +44,15 @@ class RealnoeVremyaSpider(scrapy.Spider):
             self.completed = True
             return
 
-        title = response.css('div.detailCont').css('h1::text').extract_first().strip().replace(u'\xa0', u' ')
+        title = response.css('div.detailCont').css('h1::text').extract_first().strip()\
+            .replace(u'\r', u'').replace(u'\n', u'')
+        title = unicodedata.normalize("NFKD", title)
 
         href = response.url
 
-        text = ' '.join(response.css('div.detailCont').css('p ::text').extract()).replace(u'\xa0', u' ')
-
+        text = ' '.join(response.css('div.detailCont').css('p ::text').extract())\
+            .replace(u'\r', u'').replace(u'\n', u'')
+        text = unicodedata.normalize("NFKD", text)
         yield {
             'published_date': published_date.__str__(),
             'title': title,
