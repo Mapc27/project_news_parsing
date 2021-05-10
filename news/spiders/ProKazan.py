@@ -1,11 +1,9 @@
 import datetime
 import unicodedata
-
 import scrapy
-from scrapy.crawler import CrawlerProcess
-from scrapy.utils.project import get_project_settings
 
-from config import RU_PK_URL, KZN_PK_URL
+
+from .config import RU_PK_URL, KZN_PK_URL
 
 
 class ProKazanSpider(scrapy.Spider):
@@ -56,8 +54,8 @@ class ProKazanSpider(scrapy.Spider):
 
         href = response.url
 
-        text = ' '.join(response.css('div.ArticleContent').css('p ::text')
-                        .extract()).strip().replace(u'\r', u'').replace(u'\n', u'')
+        text = ' '.join(response.css('div.ArticleContent ::text')
+                        .extract()).strip().replace(u'\r', u'').replace(u'\n', u'').replace(u'\t', u'')
         text = unicodedata.normalize("NFKD", text)
 
         yield {
@@ -66,10 +64,3 @@ class ProKazanSpider(scrapy.Spider):
             'href': href,
             'text': text,
         }
-
-
-if __name__ == '__main__':
-    process = CrawlerProcess(get_project_settings())
-    process.crawl(ProKazanSpider,
-                  limit_published_date=datetime.datetime(2021, 5, 3, 21, 4))
-    process.start()

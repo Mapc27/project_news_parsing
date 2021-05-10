@@ -1,12 +1,10 @@
 import datetime
 import json
 import unicodedata
-
 import scrapy
-from scrapy.crawler import CrawlerProcess
-from scrapy.utils.project import get_project_settings
 
-from config import IK_URL
+
+from .config import IK_URL
 
 
 class InKazanSpider(scrapy.Spider):
@@ -22,8 +20,8 @@ class InKazanSpider(scrapy.Spider):
 
     def start_requests(self):
         now = datetime.datetime.now()
-        yield scrapy.Request(self.url.format(date_time=now.date().__str__() + 'T'
-                                                       + now.time().__str__()), callback=self.parse)
+        yield scrapy.Request(self.url.format(date_time=now.date().__str__() + 'T' + now.time().__str__()),
+                             callback=self.parse)
 
     def parse(self, response, **kwargs):
         published_at = datetime.datetime.now()
@@ -43,8 +41,8 @@ class InKazanSpider(scrapy.Spider):
         self.min_date = published_at
 
         if not self.completed:
-            yield response.follow(self.url.format(date_time=published_at.date().__str__() + 'T'
-                                                            + published_at.time().__str__()), callback=self.parse)
+            yield response.follow(self.url.format(
+                date_time=published_at.date().__str__() + 'T' + published_at.time().__str__()), callback=self.parse)
 
     def parse_news(self, response, **kwargs):
         published_date = kwargs.get('published_date', None)
@@ -59,7 +57,7 @@ class InKazanSpider(scrapy.Spider):
         href = response.url
 
         text = ' '.join(response.css('div.content-blocks').css('p ::text')
-                        .extract()).strip().replace(u'\r', u'').replace(u'\n', u'')
+                        .extract()).strip().replace(u'\r', u'').replace(u'\n', u'').replace(u'\t', u'')
         text = unicodedata.normalize("NFKD", text)
 
         yield {
@@ -68,10 +66,3 @@ class InKazanSpider(scrapy.Spider):
             'href': href,
             'text': text,
         }
-
-
-if __name__ == '__main__':
-    process = CrawlerProcess(get_project_settings())
-    process.crawl(InKazanSpider,
-                  limit_published_date=datetime.datetime(2021, 5, 3, 21, 4))
-    process.start()

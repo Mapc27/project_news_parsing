@@ -1,11 +1,9 @@
 import datetime
 import unicodedata
-
 import scrapy
-from scrapy.crawler import CrawlerProcess
-from scrapy.utils.project import get_project_settings
 
-from config import KF_URL, months_names
+
+from .config import KF_URL, months_names
 
 
 class KazanFirstSpider(scrapy.Spider):
@@ -19,7 +17,7 @@ class KazanFirstSpider(scrapy.Spider):
         self.limit_published_date = kwargs.get('limit_published_date', None)
 
     def start_requests(self):
-        yield scrapy.Request(self.url.format(1), callback=self.parse)
+        yield scrapy.Request(self.url.format('1'), callback=self.parse, dont_filter=True)
 
     def parse(self, response, **kwargs):
         for news in response.css('a'):
@@ -32,12 +30,11 @@ class KazanFirstSpider(scrapy.Spider):
                 break
 
         if not self.completed:
-            # 'https://kazanfirst.ru/news?content_only=1&page={}&limit=15&start_limit=15'
             left = response.url.rfind('page=')
             right = response.url.find('&limit')
             current_page = int(response.url[left+5:right])
 
-            yield response.follow(self.url.format(current_page + 1), callback=self.parse)
+            yield response.follow(self.url.format(str(current_page + 1)), callback=self.parse)
 
     def parse_news(self, response):
         published_date = response.css('div.post-info')
@@ -67,13 +64,14 @@ class KazanFirstSpider(scrapy.Spider):
             self.completed = True
             return
 
-        title = response.css('h1.content__title::text').extract_first().strip().replace(u'\r', u'').replace(u'\n', u'')
+        title = response.css('h1.content__title::text').extract_first().strip()\
+            .replace(u'\r', u'').replace(u'\n', u'').replace(u'\u200b', u'')
         title = unicodedata.normalize("NFKD", title)
 
         href = response.url
 
         text = ' '.join(response.css('div.infinite-container').css('p ::text')
-                        .extract()[:-2]).strip().replace(u'\r', u'').replace(u'\n', u'')
+                        .extract()[:-2]).strip().replace(u'\r', u'').replace(u'\n', u'').replace(u'\t', u'')
         text = unicodedata.normalize("NFKD", text)
 
         yield {
@@ -82,10 +80,3 @@ class KazanFirstSpider(scrapy.Spider):
             'href': href,
             'text': text,
         }
-
-
-if __name__ == '__main__':
-    process = CrawlerProcess(get_project_settings())
-    process.crawl(KazanFirstSpider,
-                  limit_published_date=datetime.datetime(2021, 5, 8, 21, 4))
-    process.start()

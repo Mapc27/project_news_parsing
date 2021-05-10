@@ -1,11 +1,9 @@
 import datetime
 import unicodedata
-
 import scrapy
-from scrapy.crawler import CrawlerProcess
-from scrapy.utils.project import get_project_settings
 
-from config import TNV_URL, months_names
+
+from .config import TNV_URL, months_names
 
 
 class TNVSpider(scrapy.Spider):
@@ -36,9 +34,10 @@ class TNVSpider(scrapy.Spider):
             current_page = int(response.url.split("=")[-1])
             yield response.follow(self.url + str(current_page + 1), callback=self.parse)
 
-    def parse_news(self, response):
+    def parse_news(self, response, requests_count=0):
         try:
-            published_date = response.css('div.novelty__information').css('p.novelty__date::text').extract_first().strip()
+            published_date = response.css('div.novelty__information').css('p.novelty__date::text')\
+                .extract_first().strip()
 
             month = published_date.split(' ')[1]
             replace = months_names.index(month.lower())
@@ -68,15 +67,7 @@ class TNVSpider(scrapy.Spider):
                 'text': text,
             }
         except AttributeError:
-            print("=" * 50, response.url, '=' * 50)
-            yield response.follow(response.url, callback=self.parse_news, dont_filter=True, method='POST')
-
-
-if __name__ == '__main__':
-    # создаём process
-    # get_project_settings() передаёт settings в том числе файл pipeline.py, в который уходят данные с парсинга
-    process = CrawlerProcess(get_project_settings())
-    # переда1м параметр limit_published_date, datetime. Новости будут браться с datetime > limit_published_date
-    process.crawl(TNVSpider,
-                  limit_published_date=datetime.datetime(2021, 4, 24, 21, 4))
-    process.start()
+            if requests_count > 5:
+                return
+            yield response.follow(response.url, callback=self.parse_news, dont_filter=True, method='POST',
+                                  cb_kwargs={'requests_count': requests_count+1})

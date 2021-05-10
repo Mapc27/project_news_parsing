@@ -1,10 +1,9 @@
 import datetime
 import unicodedata
-
 import scrapy
-from config import RV_URL
-from scrapy.crawler import CrawlerProcess
-from scrapy.utils.project import get_project_settings
+
+
+from .config import RV_URL
 
 
 class RealnoeVremyaSpider(scrapy.Spider):
@@ -51,7 +50,7 @@ class RealnoeVremyaSpider(scrapy.Spider):
         href = response.url
 
         text = ' '.join(response.css('div.detailCont').css('p ::text').extract())\
-            .replace(u'\r', u'').replace(u'\n', u'')
+            .replace(u'\r', u'').replace(u'\n', u'').replace(u'\t', u'')
         text = unicodedata.normalize("NFKD", text)
         yield {
             'published_date': published_date.__str__(),
@@ -59,10 +58,3 @@ class RealnoeVremyaSpider(scrapy.Spider):
             'href': href,
             'text': text,
         }
-
-
-if __name__ == '__main__':
-    process = CrawlerProcess(get_project_settings())
-    process.crawl(RealnoeVremyaSpider,
-                  limit_published_date=datetime.datetime(2021, 5, 3, 21, 4))
-    process.start()

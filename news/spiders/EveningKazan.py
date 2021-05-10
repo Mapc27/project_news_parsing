@@ -1,11 +1,9 @@
 import datetime
 import unicodedata
-
 import scrapy
-from scrapy.crawler import CrawlerProcess
-from scrapy.utils.project import get_project_settings
 
-from config import EK_URL
+
+from .config import EK_URL
 
 
 class EveningKazanSpider(scrapy.Spider):
@@ -51,8 +49,8 @@ class EveningKazanSpider(scrapy.Spider):
 
         href = response.url
 
-        text = ' '.join(response.css('div.sidebar-both').css('div.content').css('p ::text')
-                        .extract()).strip().replace(u'\r', u'').replace(u'\n', u'')
+        text = ' '.join(response.css('div.sidebar-both').css('div.content ::text')
+                        .extract()).strip().replace(u'\r', u'').replace(u'\n', u'').replace(u'\t', u'')
         text = unicodedata.normalize("NFKD", text)
 
         yield {
@@ -61,10 +59,3 @@ class EveningKazanSpider(scrapy.Spider):
             'href': href,
             'text': text,
         }
-
-
-if __name__ == '__main__':
-    process = CrawlerProcess(get_project_settings())
-    process.crawl(EveningKazanSpider,
-                  limit_published_date=datetime.datetime(2021, 5, 8, 21, 4))
-    process.start()

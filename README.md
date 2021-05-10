@@ -23,7 +23,7 @@ need to update
   - [`db.py`](source/db.py) - файл работа с базой данных
   - [`match.py`](source/match.py) - файл сравнение новостей
   - [`parser.py`](source/parser.py) - файл с кодом сбора новостей
-  - [`main.py`](source/main.py) - файл основная логика проекта
+  - [`main.py`](main.py) - файл основная логика проекта
 - [`news`](news) - папка scrapy для парсинга
   - [`spiders`](news/spiders) - папка с пауками scrapy
     - [`config.py`](news/spiders/config.py) - файл конфигураций для пауков

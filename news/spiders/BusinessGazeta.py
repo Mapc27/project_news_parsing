@@ -1,11 +1,9 @@
 import datetime
-
-import scrapy
-from scrapy.crawler import CrawlerProcess
-from scrapy.utils.project import get_project_settings
-
-from config import BG_URL
 import unicodedata
+import scrapy
+
+
+from .config import BG_URL
 
 
 class BusinessGazetaSpider(scrapy.Spider):
@@ -51,7 +49,8 @@ class BusinessGazetaSpider(scrapy.Spider):
 
         href = response.url
 
-        text = ' '.join(response.css('div.articleBody').css('p ::text').extract()).replace(u'\r', u'').replace(u'\n', u'')
+        text = ' '.join(response.css('div.articleBody').css('p ::text').extract())\
+            .replace(u'\r', u'').replace(u'\n', u'').replace(u'\t', u'')
         text = unicodedata.normalize("NFKD", text)
 
         dictionary = {
@@ -61,10 +60,3 @@ class BusinessGazetaSpider(scrapy.Spider):
             'text': text,
         }
         yield dictionary
-
-
-if __name__ == '__main__':
-    process = CrawlerProcess(get_project_settings())
-    process.crawl(BusinessGazetaSpider,
-                  limit_published_date=datetime.datetime(2021, 5, 6, 17, 56))
-    process.start()

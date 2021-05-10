@@ -5,7 +5,7 @@
 TI_URL = 'https://www.tatar-inform.ru/news/widget/list/novosti/page/'
 EK_URL = 'https://www.evening-kazan.ru/novosti-kazan-tatarstan.html?page='
 BG_URL = 'https://www.business-gazeta.ru/category/6/'
-KF_URL = 'https://kazanfirst.ru/news?content_only=1&page={}&limit=15&start_limit=15'
+KF_URL = 'https://kazanfirst.ru/news?content_only=1&page={}&limit=18&start_limit=18'
 RV_URL = 'https://realnoevremya.ru/news'
 T2_URL = 'https://www.tatarstan24.tv/news/page/'
 TNV_URL = 'https://tnv.ru/local/action/news/list.php?PAGEN_1='
