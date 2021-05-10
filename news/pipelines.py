@@ -23,10 +23,12 @@ class NewsPipeline:
     def close_spider(self, spider):
         # вызывается, когда паук закрывается
         # есть также метод, вызывающийся, когда паук открывается
+        # тут я просто сортирую новости
         for i in range(len(self.lst)-1):
             for j in range(i, len(self.lst)):
                 if datetime.datetime.strptime(self.lst[i]['published_date'], "%Y-%m-%d %H:%M:%S") <\
                         datetime.datetime.strptime(self.lst[j]['published_date'], "%Y-%m-%d %H:%M:%S"):
                     self.lst[i],  self.lst[j] = self.lst[j], self.lst[i]
+        # и вывожу их
         for i in self.lst:
             print(i)
