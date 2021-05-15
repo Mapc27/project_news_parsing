@@ -18,11 +18,11 @@ https://drive.google.com/drive/folders/1b15yjrtGpKQdG5_Awp6abk3pZxktcOc_?usp=sha
 
 # Структура проекта:
 need to update
-- [`source`](source) - папка с кодом проекта.
-  - [`parser.py`](source/parser.py) - файл сбора новостей
-  - [`db.py`](source/db.py) - файл работа с базой данных
-  - [`match.py`](source/match.py) - файл сравнение новостей
-  - [`parser.py`](source/parser.py) - файл с кодом сбора новостей
+- [`source`](news/source) - папка с кодом проекта.
+  - [`parser.py`](news/source/parser.py) - файл сбора новостей
+  - [`db.py`](news/source/db.py) - файл работа с базой данных
+  - [`match.py`](news/source/match.py) - файл сравнение новостей
+  - [`parser.py`](news/source/parser.py) - файл с кодом сбора новостей
   - [`main.py`](main.py) - файл основная логика проекта
 - [`news`](news) - папка scrapy для парсинга
   - [`spiders`](news/spiders) - папка с пауками scrapy

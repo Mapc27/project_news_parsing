@@ -34,6 +34,7 @@ class NewsSpiderMiddleware:
 
         # Must return an iterable of Request, or item objects.
         for i in result:
+            print(i)
             yield i
 
     def process_spider_exception(self, response, exception, spider):

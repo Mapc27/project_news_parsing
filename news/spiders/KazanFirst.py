@@ -70,8 +70,8 @@ class KazanFirstSpider(scrapy.Spider):
 
         href = response.url
 
-        text = ' '.join(response.css('div.infinite-container').css('p ::text')
-                        .extract()[:-2]).strip().replace(u'\r', u'').replace(u'\n', u'').replace(u'\t', u'')
+        text = ' '.join(response.xpath('/html/body/main/main/section/div/section[1]/div[3]').css('p::text')
+                                .extract()).strip().replace(u'\r', u'').replace(u'\n', u'').replace(u'\t', u'')
         text = unicodedata.normalize("NFKD", text)
 
         yield {
