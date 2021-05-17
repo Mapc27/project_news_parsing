@@ -1,9 +1,18 @@
 # Такие методы, как достать из БД n-ное количество новостей с учётом времени
 
+from contextlib import contextmanager
 
-from sqlalchemy import Column, Integer, String, ForeignKey, create_engine, and_
+from sqlalchemy import (Column,
+                        Integer,
+                        String,
+                        ForeignKey,
+                        create_engine,
+                        and_,
+                        exc,)
 from sqlalchemy.orm import relationship, backref, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+
+import os
 
 DATABASE_NAME = 'parsed_news.sqlite'
 
@@ -31,6 +40,7 @@ class TINews(Base):
 class CompetitorsNews(Base):
     __tablename__ = "competitors_news"
     id = Column(Integer, primary_key=True, autoincrement=True)
+    link = Column(String, default=None)
     is_match = Column(Integer, default=None)
     matching_news_id = Column(Integer, ForeignKey("ti_news.id"), default=None)
 
