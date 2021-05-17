@@ -78,6 +78,15 @@ def get_session_without_expire():
         session.close()
 
 
+def get_ti_news(session, time_: str, title_: str):
+    news = session.query(TINews).filter(and_(TINews.time == time_, TINews.title == title_)).first()
+    return news
+
+
+def ti_news_exists(session, time_: str, title_: str) -> bool:
+    return get_ti_news(session, time_, title_) is not None
+
+
 def add_ti_news(time_:str, title_: str, text_: str):
     with get_session_without_expire() as session:
         ti_news = TINews(time=time_, title=title_, text=text_)
