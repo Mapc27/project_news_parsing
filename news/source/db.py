@@ -1,13 +1,17 @@
-# ATTENTION ЭТО МОЁ ВИДЕНИЕ ПРОЕКТА. ПИШУ ЭТО ЗДЕСЬ, ЧТОБЫ НЕ ЗАБЫТЬ МЫСЛИ.
-# ЕСЛИ У ВАС ЕСТЬ ПРЕДЛОЖЕНИЯ, ТО НУЖНО СООБЩАТЬ О НИХ
-
 # Такие методы, как достать из БД n-ное количество новостей с учётом времени
 
 
-from sqlalchemy import Column, Integer, String, ForeignKey, Table
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy import Column, Integer, String, ForeignKey, create_engine, and_
+from sqlalchemy.orm import relationship, backref, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
+DATABASE_NAME = 'parsed_news.sqlite'
+
+import os
+
+
+engine = create_engine(f'sqlite:///{DATABASE_NAME}')
+Session = sessionmaker(bind=engine)
 
 Base = declarative_base()
 
@@ -32,3 +36,16 @@ class CompetitorsNews(Base):
 
     def __repr__(self):
         return f"{self.id} | is match: {self.is_match} | matching news: {self.matching_news.title}"
+
+
+def create_db():
+    Base.metadata.create_all(engine)
+
+
+if __name__ == '__main__':
+    db_is_created = os.path.exists(DATABASE_NAME)
+    if not db_is_created:
+        create_db()
+
+    session = Session()
+
