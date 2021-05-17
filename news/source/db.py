@@ -52,6 +52,38 @@ def create_db():
     Base.metadata.create_all(engine)
 
 
+@contextmanager
+def get_session():
+    session = Session()
+    try:
+        yield session
+        session.commit()
+    except exc.SQLAlchemyError:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+@contextmanager
+def get_session_without_expire():
+    session = Session(expire_on_commit=False)
+    try:
+        yield session
+        session.commit()
+    except exc.SQLAlchemyError:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+def add_ti_news(time_:str, title_: str, text_: str):
+    with get_session_without_expire() as session:
+        ti_news = TINews(time=time_, title=title_, text=text_)
+        session.add(ti_news)
+
+
 if __name__ == '__main__':
     db_is_created = os.path.exists(DATABASE_NAME)
     if not db_is_created:
