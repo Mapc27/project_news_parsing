@@ -14,7 +14,7 @@ Base = declarative_base()
 
 class TINews(Base):
     __tablename__ = "ti_news"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     time = Column(String(30), default=None)
     title = Column(String, default=None)
     text = Column(String, default=None)
@@ -26,7 +26,7 @@ class TINews(Base):
 
 class CompetitorsNews(Base):
     __tablename__ = "competitors_news"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     is_match = Column(Integer, default=None)
     matching_news_id = Column(Integer, ForeignKey("ti_news.ti_news_id"), default=None)
 
