@@ -28,7 +28,7 @@ class CompetitorsNews(Base):
     __tablename__ = "competitors_news"
     id = Column(Integer, primary_key=True, autoincrement=True)
     is_match = Column(Integer, default=None)
-    matching_news_id = Column(Integer, ForeignKey("ti_news.ti_news_id"), default=None)
+    matching_news_id = Column(Integer, ForeignKey("ti_news.id"), default=None)
 
     def __repr__(self):
         return f"{self.id} | is match: {self.is_match} | matching news: {self.matching_news.title}"
