@@ -94,6 +94,27 @@ def add_ti_news(time_: datetime, title_: str, text_: str):
             session.add(ti_news)
 
 
+def get_competitor_news(session, link):
+    news = session.query(CompetitorsNews).filter(CompetitorsNews.link == link).first()
+    return news
+
+
+def competitor_news_exists(session, link: str):
+    return get_competitor_news(session, link) is not None
+
+
+def add_competitor_news(link_: str, is_match_: bool, matching_news_id_: int = None):
+    with get_session() as session:
+        if not competitor_news_exists(session, link_):
+            comp_news = CompetitorsNews(link=link_,
+                                        is_match=is_match_,
+                                        matching_news_id=matching_news_id_)
+            if is_match_:
+                matching_news_ = session.query(TINews).get(matching_news_id_)
+                comp_news.matching_news = matching_news_
+            session.add(comp_news)
+
+
 if __name__ == '__main__':
     db_is_created = os.path.exists(DATABASE_NAME)
     if not db_is_created:
