@@ -51,7 +51,6 @@ class CompetitorsNews(Base):
 def create_db():
     Base.metadata.create_all(engine)
 
-
 @contextmanager
 def get_session():
     session = Session()
@@ -87,10 +86,11 @@ def ti_news_exists(session, time_: str, title_: str) -> bool:
     return get_ti_news(session, time_, title_) is not None
 
 
-def add_ti_news(time_:str, title_: str, text_: str):
+def add_ti_news(time_: str, title_: str, text_: str):
     with get_session_without_expire() as session:
-        ti_news = TINews(time=time_, title=title_, text=text_)
-        session.add(ti_news)
+        if not ti_news_exists(session, time_, title_):
+            ti_news = TINews(time=time_, title=title_, text=text_)
+            session.add(ti_news)
 
 
 if __name__ == '__main__':
@@ -98,5 +98,8 @@ if __name__ == '__main__':
     if not db_is_created:
         create_db()
 
-    session = Session()
+    add_ti_news('time1', 'title1', 'text1')
+    add_ti_news('time1', 'title1', 'text1')
+    add_ti_news('time2', 'title2', 'text2')
+
 
