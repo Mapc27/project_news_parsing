@@ -18,10 +18,8 @@ import os
 
 DATABASE_NAME = 'parsed_news.sqlite'
 
-import os
 
-
-engine = create_engine(f'sqlite:///{DATABASE_NAME}')
+engine = create_engine(f'sqlite:///{DATABASE_NAME}', echo=True)
 Session = sessionmaker(bind=engine)
 
 Base = declarative_base()
@@ -47,8 +45,9 @@ class CompetitorsNews(Base):
     matching_news_id = Column(Integer, ForeignKey("ti_news.id"), default=None)
 
     def __repr__(self):
-        return f"{self.id} | is match: {self.is_match} | matching news: {self.matching_news.title}"
-
+        if self.is_match:
+            return f"{self.id} | link: {self.link} |is match: {self.is_match} | matching news: {self.matching_news.title}"
+        return f"{self.id} | link: {self.link} | is match: {self.is_match}"
 
 def create_db():
     Base.metadata.create_all(engine)
