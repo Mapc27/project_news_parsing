@@ -5,13 +5,15 @@ from contextlib import contextmanager
 from sqlalchemy import (Column,
                         Integer,
                         String,
+                        DateTime,
+                        Boolean,
                         ForeignKey,
                         create_engine,
                         and_,
                         exc,)
 from sqlalchemy.orm import relationship, backref, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-
+from datetime import datetime
 import os
 
 DATABASE_NAME = 'parsed_news.sqlite'
@@ -28,7 +30,7 @@ Base = declarative_base()
 class TINews(Base):
     __tablename__ = "ti_news"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    time = Column(String(30), default=None)
+    time = Column(DateTime, default=None)
     title = Column(String, default=None)
     text = Column(String, default=None)
     match = relationship("CompetitorsNews", backref=backref("matching_news"))
@@ -41,7 +43,7 @@ class CompetitorsNews(Base):
     __tablename__ = "competitors_news"
     id = Column(Integer, primary_key=True, autoincrement=True)
     link = Column(String, default=None)
-    is_match = Column(Integer, default=None)
+    is_match = Column(Boolean, default=None)
     matching_news_id = Column(Integer, ForeignKey("ti_news.id"), default=None)
 
     def __repr__(self):
@@ -77,16 +79,16 @@ def get_session_without_expire():
         session.close()
 
 
-def get_ti_news(session, time_: str, title_: str):
+def get_ti_news(session, time_: datetime, title_: str):
     news = session.query(TINews).filter(and_(TINews.time == time_, TINews.title == title_)).first()
     return news
 
 
-def ti_news_exists(session, time_: str, title_: str) -> bool:
+def ti_news_exists(session, time_: datetime, title_: str) -> bool:
     return get_ti_news(session, time_, title_) is not None
 
 
-def add_ti_news(time_: str, title_: str, text_: str):
+def add_ti_news(time_: datetime, title_: str, text_: str):
     with get_session_without_expire() as session:
         if not ti_news_exists(session, time_, title_):
             ti_news = TINews(time=time_, title=title_, text=text_)
