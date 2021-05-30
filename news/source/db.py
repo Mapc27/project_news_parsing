@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from sqlalchemy import (Column,
                         Integer,
                         String,
+                        Boolean,
                         ForeignKey,
                         create_engine,
                         and_,
@@ -16,13 +17,21 @@ import os
 
 DATABASE_NAME = 'parsed_news.sqlite'
 
-import os
-
 
 engine = create_engine(f'sqlite:///{DATABASE_NAME}')
 Session = sessionmaker(bind=engine)
 
 Base = declarative_base()
+
+
+class Website(Base):
+    __tablename__ = "website"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name_website = Column(String, default=None)
+
+    def __repr__(self):
+        return f"{self.id} | {self.name_website}"
 
 
 class TINews(Base):
@@ -41,8 +50,9 @@ class CompetitorsNews(Base):
     __tablename__ = "competitors_news"
     id = Column(Integer, primary_key=True, autoincrement=True)
     link = Column(String, default=None)
-    is_match = Column(Integer, default=None)
+    is_match = Column(Boolean, default=False)
     matching_news_id = Column(Integer, ForeignKey("ti_news.id"), default=None)
+    website_id = Column(Integer, default=None)
 
     def __repr__(self):
         return f"{self.id} | is match: {self.is_match} | matching news: {self.matching_news.title}"
@@ -50,6 +60,7 @@ class CompetitorsNews(Base):
 
 def create_db():
     Base.metadata.create_all(engine)
+
 
 @contextmanager
 def get_session():
@@ -93,6 +104,26 @@ def add_ti_news(time_: str, title_: str, text_: str):
             session.add(ti_news)
 
 
+def add_website(session, website):
+    website = Website(name_website=website)
+    session.add(website)
+    return website.id
+
+
+def get_website_id(session, name_website_: str):
+    website = session.query(Website).filter_by(name_website=name_website_).first()
+    if website is not None:
+        return website.id
+    return add_website(session, name_website_)
+
+
+def add_competitors_news(link_: str, website: str, is_match_: bool, matching_news_id_: int):
+    with get_session_without_expire() as session:
+        website_id_ = get_website_id(session, website)
+        competitors_news = CompetitorsNews(link=link_, is_match=is_match_, matching_news_id=matching_news_id_, website_id=website_id_)
+        session.add(competitors_news)
+
+
 if __name__ == '__main__':
     db_is_created = os.path.exists(DATABASE_NAME)
     if not db_is_created:
@@ -101,5 +132,7 @@ if __name__ == '__main__':
     add_ti_news('time1', 'title1', 'text1')
     add_ti_news('time1', 'title1', 'text1')
     add_ti_news('time2', 'title2', 'text2')
+
+    #add_competitors_news('link1', 'website', True, 1)
 
 
