@@ -60,6 +60,7 @@ class CompetitorsNews(Base):
             return f"{self.id} | link: {self.link} |is match: {self.is_match} | matching news: {self.matching_news.title}"
         return f"{self.id} | link: {self.link} | is match: {self.is_match}"
 
+
 def create_db():
     Base.metadata.create_all(engine)
 
@@ -149,6 +150,19 @@ def get_matching_news_id(time_: str, title_: str):
     return news.id
 
 
+def get_ti_news_for_time(before_time: str):
+    list_ti_news = []
+    with get_session_without_expire() as session:
+        ti_news = session.query(TINews).filter(TINews.time < before_time).all()
+        for news in ti_news:
+            dic = {'time': news.time,
+                   'title': news.title,
+                   'text': news.text}
+            list_ti_news.append(dic)
+
+    return list_ti_news
+
+
 if __name__ == '__main__':
     db_is_created = os.path.exists(DATABASE_NAME)
     if not db_is_created:
@@ -159,5 +173,8 @@ if __name__ == '__main__':
     add_ti_news('time2', 'title2', 'text2')
 
     add_competitor_news('link6', 'website', True, 2)
+    add_ti_news('time3', 'title2', 'text2')
+
+    print(get_ti_news_for_time('time3'))
 
 
