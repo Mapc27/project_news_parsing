@@ -16,14 +16,8 @@ class NewsPipeline:
         self.lst = []
 
     def process_item(self, item, spider):
-        # сюда попадает каждая новость с паука в item
-        # нужно добавить метод добавления новости в БД
         self.lst.append(item)
 
     def close_spider(self, spider):
-        if spider.name == 'TatarInform':
-            match.ti_array = self.lst
-        else:
-            for i in self.lst:
-                match.other_array.append(i)
+        pass
 

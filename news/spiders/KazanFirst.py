@@ -1,9 +1,11 @@
 import datetime
 import unicodedata
+
 import scrapy
+from scrapy.loader import ItemLoader
 
-
-from .config import KF_URL, months_names
+from news.items import NewsItem
+from news.source.config import KF_URL, months_names
 
 
 class KazanFirstSpider(scrapy.Spider):
@@ -15,6 +17,8 @@ class KazanFirstSpider(scrapy.Spider):
         super().__init__(*args, **kwargs)
         self.completed = False
         self.limit_published_date = kwargs.get('limit_published_date', None)
+        self.output_callback = kwargs.get('callback', None)
+        self.lst = []
 
     def start_requests(self):
         yield scrapy.Request(self.url.format('1'), callback=self.parse, dont_filter=True)
@@ -37,6 +41,8 @@ class KazanFirstSpider(scrapy.Spider):
             yield response.follow(self.url.format(str(current_page + 1)), callback=self.parse)
 
     def parse_news(self, response):
+        loader = ItemLoader(item=NewsItem(), selector=response)
+
         published_date = response.css('div.post-info')
 
         time = published_date.css('span.post-info__time::text').extract_first().strip()
@@ -64,19 +70,36 @@ class KazanFirstSpider(scrapy.Spider):
             self.completed = True
             return
 
-        title = response.css('h1.content__title::text').extract_first().strip()\
+        text = ' '.join(response.css('div.infinite-container').css('p ::text')
+                        .extract()[:])
+
+        # loader.add_value('from_site', self.name)
+        # loader.add_value('published_date', published_date.__str__())
+        # loader.add_css('title', 'h1.content__title')
+        # loader.add_value('href', response.url)
+        # loader.add_value('text', text)
+        #
+        # self.lst.append(loader.load_item())
+        #
+        # yield loader.load_item()
+        title = response.css('h1.content__title::text').extract_first().strip() \
             .replace(u'\r', u'').replace(u'\n', u'').replace(u'\u200b', u'')
         title = unicodedata.normalize("NFKD", title)
 
         href = response.url
 
-        text = ' '.join(response.xpath('/html/body/main/main/section/div/section[1]/div[3]').css('p::text')
-                                .extract()).strip().replace(u'\r', u'').replace(u'\n', u'').replace(u'\t', u'')
+        text = ' '.join(response.css('div.infinite-container').css('p ::text')
+                        .extract()[:]).strip().replace(u'\r', u'').replace(u'\n', u'').replace(u'\t', u'')
         text = unicodedata.normalize("NFKD", text)
 
-        yield {
+        out = {
+            'from_site': self.name,
             'published_date': published_date.__str__(),
             'title': title,
             'href': href,
             'text': text,
         }
+        self.lst.append(out)
+
+    def close(self, spider, reason):
+        self.output_callback(self.lst)

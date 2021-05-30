@@ -10,7 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import date, timedelta, datetime
 
-from news.spiders import config
+from news.source import config
 
 
 class Parser:

@@ -1,6 +1,3 @@
-# ATTENTION ЭТО МОЁ ВИДЕНИЕ ПРОЕКТА. ПИШУ ЭТО ЗДЕСЬ, ЧТОБЫ НЕ ЗАБЫТЬ МЫСЛИ.
-# ЕСЛИ У ВАС ЕСТЬ ПРЕДЛОЖЕНИЯ, ТО НУЖНО СООБЩАТЬ О НИХ
-
 # Файл с конфигом
 TI_URL = 'https://www.tatar-inform.ru/news/widget/list/novosti/page/'
 EK_URL = 'https://www.evening-kazan.ru/novosti-kazan-tatarstan.html?page='
@@ -16,3 +13,11 @@ IK_URL = 'https://inkazan.ru/api/v1/matters?type[]=NewsItem&date_end={date_time}
 
 months_names = ['', 'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
                 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+
+
+headers = {
+        'Accept': '*/*',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
+    }

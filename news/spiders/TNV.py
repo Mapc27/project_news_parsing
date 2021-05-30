@@ -1,9 +1,11 @@
 import datetime
 import unicodedata
+
 import scrapy
+from scrapy.loader import ItemLoader
 
-
-from .config import TNV_URL, months_names
+from news.items import NewsItem
+from news.source.config import TNV_URL, months_names
 
 
 class TNVSpider(scrapy.Spider):
@@ -15,12 +17,26 @@ class TNVSpider(scrapy.Spider):
         super().__init__(*args, **kwargs)
         self.completed = False
         self.limit_published_date = kwargs.get('limit_published_date', None)
+        self.output_callback = kwargs.get('callback', None)
+        self.lst = []
 
     def start_requests(self):
         yield scrapy.Request(self.url + '1', callback=self.parse)
 
     def parse(self, response, **kwargs):
         for news in response.css('div.news-page-list__item'):
+            date = news.css('p.news-page-list__date::text').extract_first().strip()
+            date = date.lower()
+
+            for i in range(1, len(months_names)):
+                if months_names[i] in date:
+                    date = date.replace(months_names[i], str(i))
+
+            date = datetime.datetime.strptime(date, "%d %m %Y, %H:%M")
+
+            if date <= self.limit_published_date:
+                self.completed = True
+                break
 
             href = news.css('a::attr(href)').extract_first()
             href = self.start_urls[0] + href
@@ -36,6 +52,8 @@ class TNVSpider(scrapy.Spider):
 
     def parse_news(self, response, requests_count=0):
         try:
+            loader = ItemLoader(item=NewsItem(), selector=response)
+
             published_date = response.css('div.novelty__information').css('p.novelty__date::text')\
                 .extract_first().strip()
 
@@ -49,6 +67,15 @@ class TNVSpider(scrapy.Spider):
                 self.completed = True
                 return
 
+            # loader.add_value('from_site', self.name)
+            # loader.add_value('published_date', published_date.__str__())
+            # loader.add_css('title', 'div.page__head > h1')
+            # loader.add_value('href', response.url)
+            # loader.add_css('text', 'div.js-image-description')
+            #
+            # self.lst.append(loader.load_item())
+            #
+            # yield loader.load_item()
             title = response.css('div.page__head').css('h1::text') \
                 .extract_first().strip().replace(u'\r', u'').replace(u'\n', u'')
             title = unicodedata.normalize("NFKD", title)
@@ -60,14 +87,20 @@ class TNVSpider(scrapy.Spider):
             text = ' '.join(array).strip().replace(u'\r', u'').replace(u'\n', u'').replace(u'\t', u'')
             text = unicodedata.normalize("NFKD", text)
 
-            yield {
+            out = {
+                'from_site': self.name,
                 'published_date': published_date.__str__(),
                 'title': title,
                 'href': href,
                 'text': text,
             }
+            self.lst.append(out)
+
         except AttributeError:
             if requests_count > 5:
                 return
             yield response.follow(response.url, callback=self.parse_news, dont_filter=True, method='POST',
                                   cb_kwargs={'requests_count': requests_count+1})
+
+    def close(self, spider, reason):
+        self.output_callback(self.lst)

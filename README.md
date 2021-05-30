@@ -26,5 +26,5 @@ need to update
   - [`main.py`](main.py) - файл основная логика проекта
 - [`news`](news) - папка scrapy для парсинга
   - [`spiders`](news/spiders) - папка с пауками scrapy
-    - [`config.py`](news/spiders/config.py) - файл конфигураций для пауков
+    - [`config.py`](news/source/config.py) - файл конфигураций для пауков
   
