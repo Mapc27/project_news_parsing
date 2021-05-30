@@ -38,7 +38,7 @@ class Website(Base):
 class TINews(Base):
     __tablename__ = "ti_news"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    time = Column(DateTime, default=None)
+    time = Column(String, default=None)
     title = Column(String, default=None)
     text = Column(String, default=None)
     match = relationship("CompetitorsNews", backref=backref("matching_news"))
@@ -90,16 +90,16 @@ def get_session_without_expire():
         session.close()
 
 
-def get_ti_news(session, time_: datetime, title_: str):
+def get_ti_news(session, time_: str, title_: str):
     news = session.query(TINews).filter(and_(TINews.time == time_, TINews.title == title_)).first()
     return news
 
 
-def ti_news_exists(session, time_: datetime, title_: str) -> bool:
+def ti_news_exists(session, time_: str, title_: str) -> bool:
     return get_ti_news(session, time_, title_) is not None
 
 
-def add_ti_news(time_: datetime, title_: str, text_: str):
+def add_ti_news(time_: str, title_: str, text_: str):
     with get_session_without_expire() as session:
         if not ti_news_exists(session, time_, title_):
             ti_news = TINews(time=time_, title=title_, text=text_)
@@ -109,21 +109,14 @@ def add_ti_news(time_: datetime, title_: str, text_: str):
 def add_website(session, website):
     website = Website(name_website=website)
     session.add(website)
-    return website.id
+    return website
 
 
 def get_website_id(session, name_website_: str):
     website = session.query(Website).filter_by(name_website=name_website_).first()
     if website is not None:
         return website.id
-    return add_website(session, name_website_)
-
-
-# def add_competitors_news(link_: str, website: str, is_match_: bool, matching_news_id_: int):
-#     with get_session_without_expire() as session:
-#         website_id_ = get_website_id(session, website)
-#         competitors_news = CompetitorsNews(link=link_, is_match=is_match_, matching_news_id=matching_news_id_, website_id=website_id_)
-#         session.add(competitors_news)
+    return add_website(session, name_website_).id
 
 
 def get_competitor_news(session, link):
@@ -135,16 +128,25 @@ def competitor_news_exists(session, link: str):
     return get_competitor_news(session, link) is not None
 
 
-def add_competitor_news(link_: str, is_match_: bool, matching_news_id_: int = None):
+def add_competitor_news(link_: str, website: str, is_match_: bool, matching_news_id_: int = None):
     with get_session() as session:
         if not competitor_news_exists(session, link_):
+            website_id_ = get_website_id(session, website)
             comp_news = CompetitorsNews(link=link_,
                                         is_match=is_match_,
-                                        matching_news_id=matching_news_id_)
+                                        matching_news_id=matching_news_id_,
+                                        website_id=website_id_)
             if is_match_:
                 matching_news_ = session.query(TINews).get(matching_news_id_)
                 comp_news.matching_news = matching_news_
             session.add(comp_news)
+
+
+# return ti_news id by matching
+def get_matching_news_id(time_: str, title_: str):
+    with get_session_without_expire() as session:
+        news = get_ti_news(session, time_, title_)
+    return news.id
 
 
 if __name__ == '__main__':
@@ -156,6 +158,6 @@ if __name__ == '__main__':
     add_ti_news('time1', 'title1', 'text1')
     add_ti_news('time2', 'title2', 'text2')
 
-    #add_competitors_news('link1', 'website', True, 1)
+    add_competitor_news('link6', 'website', True, 2)
 
 
