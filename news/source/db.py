@@ -53,7 +53,7 @@ class CompetitorsNews(Base):
     link = Column(String, default=None)
     is_match = Column(Boolean, default=False)
     matching_news_id = Column(Integer, ForeignKey("ti_news.id"), default=None)
-    website_id = Column(Integer, default=None)
+    website_id = Column(Integer, ForeignKey("website.id"), default=None)
 
     def __repr__(self):
         if self.is_match:
