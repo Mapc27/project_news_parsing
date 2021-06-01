@@ -115,9 +115,11 @@ def add_website(session, website):
 
 def get_website_id(session, name_website_: str):
     website = session.query(Website).filter_by(name_website=name_website_).first()
-    if website is not None:
-        return website.id
-    return add_website(session, name_website_).id
+    # if website is not None:
+    #     return website.id
+    # return add_website(session, name_website_).id
+
+    return website.id
 
 
 def get_competitor_news(session, link):
@@ -141,6 +143,14 @@ def add_competitor_news(link_: str, website: str, is_match_: bool, matching_news
                 matching_news_ = session.query(TINews).get(matching_news_id_)
                 comp_news.matching_news = matching_news_
             session.add(comp_news)
+
+
+def add_comp_news_list(news: list):
+    for entry in news:
+        add_competitor_news(link_=entry['link'],
+                            website=entry['website'],
+                            is_match_=entry['is match'],
+                            matching_news_id_=entry['ti id'])
 
 
 # return ti_news id by matching
@@ -181,9 +191,8 @@ if __name__ == '__main__':
     if not db_is_created:
         create_db()
 
-    add_ti_news('time1', 'title1', 'text1')
-    add_ti_news('time1', 'title1', 'text1')
-    add_ti_news('time2', 'title2', 'text2')
+        fill_websites()
+
 
     time1 = datetime.fromisoformat("2021-10-20")
     time2 = datetime.fromisoformat("2021-10-20")
