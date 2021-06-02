@@ -184,13 +184,15 @@ def get_matching_news_id(time_: datetime, title_: str):
     return news.id
 
 
-def get_ti_news_for_time(before_time: datetime):
+def get_ti_news_for_time(up_to_time: datetime):
     list_ti_news = []
-    with get_session_without_expire() as session:
-        ti_news = session.query(TINews).filter(TINews.time < before_time).all()
+    with get_session() as session:
+        ti_news = session.query(TINews).filter(TINews.time > up_to_time).all()
         for news in ti_news:
-            dic = {'time': news.time,
+            dic = {'id': news.id,
+                   'time': news.time,
                    'title': news.title,
+                   'href': news.link,
                    'text': news.text}
             list_ti_news.append(dic)
 
@@ -218,7 +220,7 @@ if __name__ == '__main__':
 
         fill_websites()
 
-    # time1 = datetime.fromisoformat("2021-10-20")
+    time1 = datetime.fromisoformat("2020-10-20")
     # time2 = datetime.fromisoformat("2021-10-20")
     # time3 = datetime.fromisoformat("2021-10-20")
     # time4 = datetime.fromisoformat("2021-10-24")
@@ -264,3 +266,5 @@ if __name__ == '__main__':
     lst = [dict1, dict2]
 
     add_comp_news_list(lst)
+
+    print(get_ti_news_for_time(time1))
