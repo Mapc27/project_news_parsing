@@ -83,6 +83,7 @@ class Tatarstan24Spider(scrapy.Spider):
             'href': href,
             'text': text,
         }
+        print(out)
         self.lst.append(out)
 
     def close(self, spider, reason):

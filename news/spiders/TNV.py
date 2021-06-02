@@ -95,6 +95,7 @@ class TNVSpider(scrapy.Spider):
                 'text': text,
             }
             self.lst.append(out)
+            print(out)
 
         except AttributeError:
             if requests_count > 5:

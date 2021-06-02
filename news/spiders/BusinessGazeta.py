@@ -94,6 +94,7 @@ class BusinessGazetaSpider(scrapy.Spider):
             'text': text,
         }
         self.lst.append(out)
+        print(out)
 
     def close(self, spider, reason):
         self.output_callback(self.lst)

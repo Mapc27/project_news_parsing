@@ -1,11 +1,15 @@
 import scrapy
-from scrapy.crawler import CrawlerProcess
 
 from news.source.config import headers
 import re
 
 
 class MatchSpider(scrapy.Spider):
+    # """
+    # :news_list Принимает [[other_news, ti_news_1], [other_news, ti_news_2], [other_news, ti_news_3], ...]
+    # :return {other_news, 'is_match': True/False}
+    # """
+
     name = 'Match'
     start_urls = ['https://utext.rikuz.com/index.php']
 
@@ -28,12 +32,11 @@ class MatchSpider(scrapy.Spider):
                 headers=headers,
                 formdata=params,
                 callback=self.parse,
-                cb_kwargs={'news': news_tuple[1]}
             )
 
     def parse(self, response, **kwargs):
-        regex = re.compile('\d{1,3}[.]\d{1,2}[%]')
-        match = regex.findall(response.text)[0]
+        regex = re.compile('(\d{1,3}[.]\d{1,2}[%])|(\d{1,3}[%])')
+        match = regex.search(response.text).group(0)
         match = float(match[:-1])
         self.lst.append(match)
 
@@ -41,7 +44,7 @@ class MatchSpider(scrapy.Spider):
         max_match = max(self.lst)
         news = self.news_lst[0][0]
         if max_match > 15.0:
-            news['match'] = 'True'
+            news['is_match'] = 'True'
         else:
-            news['match'] = 'False'
+            news['is_match'] = 'False'
         self.output_callback(news)

@@ -96,7 +96,9 @@ class TatarInformSpider(scrapy.Spider):
             'href': href,
             'text': text,
         }
+        print(out)
         self.lst.append(out)
 
     def close(self, spider, reason):
         self.output_callback(self.lst)
+
