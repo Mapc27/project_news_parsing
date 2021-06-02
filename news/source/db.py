@@ -18,7 +18,6 @@ import os
 
 DATABASE_NAME = 'parsed_news.sqlite'
 
-
 engine = create_engine(f'sqlite:///{DATABASE_NAME}', echo=True)
 Session = sessionmaker(bind=engine)
 
@@ -40,6 +39,7 @@ class TINews(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     time = Column(DateTime, default=None)
     title = Column(String, default=None)
+    link = Column(String, default=None)
     text = Column(String, default=None)
     match = relationship("CompetitorsNews", backref=backref("matching_news"))
 
@@ -102,11 +102,24 @@ def ti_news_exists(session, time_: datetime, title_: str) -> bool:
     return get_ti_news(session, time_, title_) is not None
 
 
-def add_ti_news(time_: datetime, title_: str, text_: str):
+def add_ti_news(id_: int, time_: datetime, title_: str, link_: str, text_: str):
     with get_session_without_expire() as session:
         if not ti_news_exists(session, time_, title_):
-            ti_news = TINews(time=time_, title=title_, text=text_)
+            ti_news = TINews(id=id_, time=time_, title=title_, link=link_, text=text_)
             session.add(ti_news)
+
+
+def add_ti_news_list(news: list):
+    for entry in news:
+
+        if isinstance(entry['published_date'], str):
+            entry['published_date'] = datetime.fromisoformat(entry['published_date'])
+
+        add_ti_news(id_=entry['id'],
+                    time_=entry['published_date'],
+                    title_=entry['title'],
+                    link_=entry['href'],
+                    text_=entry['text'])
 
 
 def add_website(session, website):
@@ -117,9 +130,6 @@ def add_website(session, website):
 
 def get_website_id(session, name_website_: str):
     website = session.query(Website).filter_by(name_website=name_website_).first()
-    # if website is not None:
-    #     return website.id
-    # return add_website(session, name_website_).id
 
     return website.id
 
@@ -133,7 +143,8 @@ def competitor_news_exists(session, link: str):
     return get_competitor_news(session, link) is not None
 
 
-def add_competitor_news(date_: datetime, title_: str, link_: str, website: str, is_match_: bool, matching_news_id_: int = None):
+def add_competitor_news(date_: datetime, title_: str, link_: str, website: str,
+                        is_match_: bool, matching_news_id_: int = None):
     with get_session() as session:
         if not competitor_news_exists(session, link_):
             website_id_ = get_website_id(session, website)
@@ -156,10 +167,7 @@ def add_comp_news_list(news: list):
             entry['ti_id'] = None
 
         if isinstance(entry['published_date'], str):
-            try:
-                entry['published_date'] = datetime.fromisoformat(entry['published_date'])
-            except:
-                print('Incorrect date type')
+            entry['published_date'] = datetime.fromisoformat(entry['published_date'])
 
         add_competitor_news(date_=entry['published_date'],
                             title_=entry['title'],
@@ -197,7 +205,8 @@ def fill_websites():
                  'ProKazan',
                  'RealnoeVremya',
                  'Tatarstan24',
-                 'TNV']
+                 'TNV',
+                 'KazanFirst']
         for comp in comps:
             add_website(session, comp)
 
@@ -209,24 +218,39 @@ if __name__ == '__main__':
 
         fill_websites()
 
+    # time1 = datetime.fromisoformat("2021-10-20")
+    # time2 = datetime.fromisoformat("2021-10-20")
+    # time3 = datetime.fromisoformat("2021-10-20")
+    # time4 = datetime.fromisoformat("2021-10-24")
+    # time5 = datetime.fromisoformat("2021-10-25")
 
-    time1 = datetime.fromisoformat("2021-10-20")
-    time2 = datetime.fromisoformat("2021-10-20")
-    time3 = datetime.fromisoformat("2021-10-20")
+    ti_dict1 = {'published_date': '2021-06-02 15:33:00',
+                'title': 'title1',
+                'href': 'link1',
+                'id': 3,
+                'text': 'news text 1'}
 
-    add_ti_news(time1, 'title1', 'text1')
-    add_ti_news(time2, 'title1', 'text1')
-    add_ti_news(time3, 'title2', 'text2')
+    ti_dict2 = {'published_date': '2021-06-02 16:33:00',
+                'title': 'title2',
+                'href': 'link2',
+                'id': 4,
+                'text': 'news text 2'}
 
+    ti_dict3 = {'published_date': '2021-06-02 15:45:00',
+                'title': 'title3',
+                'href': 'link3',
+                'id': 5,
+                'text': 'news text 3'}
 
-    time4 = datetime.fromisoformat("2021-10-24")
-    time5 = datetime.fromisoformat("2021-10-25")
+    ti_list = [ti_dict1, ti_dict2, ti_dict3]
+
+    add_ti_news_list(ti_list)
 
     dict1 = {'from_site': 'BusinessGazeta',
              'published_date': '2021-06-02 09:33:00',
              'title': 'Судан из-за смены власти пересмотрит соглашение с Россией о военно-морской базе',
              'href': 'https://kam.business-gazeta.ru/news/511452',
-             'text': 'Судан намерен пересмотреть соглашение с Россией по ...' ,
+             'text': 'Судан намерен пересмотреть соглашение с Россией по ...',
              'is_match': False}
 
     dict2 = {'from_site': 'BusinessGazeta',
@@ -235,7 +259,7 @@ if __name__ == '__main__':
              'href': 'link',
              'text': 'Судан намерен пересмотреть соглашение с Россией по ...',
              'is_match': True,
-             'ti_id': 2}
+             'ti_id': 6}
 
     lst = [dict1, dict2]
 
