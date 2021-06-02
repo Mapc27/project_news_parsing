@@ -50,6 +50,8 @@ class TINews(Base):
 class CompetitorsNews(Base):
     __tablename__ = "competitors_news"
     id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime, default=None)
+    title = Column(String, default=None)
     link = Column(String, default=None)
     is_match = Column(Boolean, default=False)
     matching_news_id = Column(Integer, ForeignKey("ti_news.id"), default=None)
@@ -131,11 +133,13 @@ def competitor_news_exists(session, link: str):
     return get_competitor_news(session, link) is not None
 
 
-def add_competitor_news(link_: str, website: str, is_match_: bool, matching_news_id_: int = None):
+def add_competitor_news(date_: datetime, title_: str, link_: str, website: str, is_match_: bool, matching_news_id_: int = None):
     with get_session() as session:
         if not competitor_news_exists(session, link_):
             website_id_ = get_website_id(session, website)
-            comp_news = CompetitorsNews(link=link_,
+            comp_news = CompetitorsNews(time=date_,
+                                        title=title_,
+                                        link=link_,
                                         is_match=is_match_,
                                         matching_news_id=matching_news_id_,
                                         website_id=website_id_)
@@ -147,10 +151,22 @@ def add_competitor_news(link_: str, website: str, is_match_: bool, matching_news
 
 def add_comp_news_list(news: list):
     for entry in news:
-        add_competitor_news(link_=entry['link'],
-                            website=entry['website'],
-                            is_match_=entry['is match'],
-                            matching_news_id_=entry['ti id'])
+
+        if 'ti_id' not in entry.keys():
+            entry['ti_id'] = None
+
+        if isinstance(entry['published_date'], str):
+            try:
+                entry['published_date'] = datetime.fromisoformat(entry['published_date'])
+            except:
+                print('Incorrect date type')
+
+        add_competitor_news(date_=entry['published_date'],
+                            title_=entry['title'],
+                            link_=entry['href'],
+                            website=entry['from_site'],
+                            is_match_=entry['is_match'],
+                            matching_news_id_=entry['ti_id'])
 
 
 # return ti_news id by matching
@@ -202,8 +218,24 @@ if __name__ == '__main__':
     add_ti_news(time2, 'title1', 'text1')
     add_ti_news(time3, 'title2', 'text2')
 
-    dict1 = {'link': 'some link 1', 'website': 'ProKazan', 'is match': True, 'ti id': 1}
-    dict2 = {'link': 'some link 2', 'website': 'InKazan', 'is match': True, 'ti id': 2}
+
+    time4 = datetime.fromisoformat("2021-10-24")
+    time5 = datetime.fromisoformat("2021-10-25")
+
+    dict1 = {'from_site': 'BusinessGazeta',
+             'published_date': '2021-06-02 09:33:00',
+             'title': 'Судан из-за смены власти пересмотрит соглашение с Россией о военно-морской базе',
+             'href': 'https://kam.business-gazeta.ru/news/511452',
+             'text': 'Судан намерен пересмотреть соглашение с Россией по ...' ,
+             'is_match': False}
+
+    dict2 = {'from_site': 'BusinessGazeta',
+             'published_date': '2021-06-02 09:35:00',
+             'title': 'Судан из-за смены власти пересмотрит соглашение с Россией о военно-морской базе',
+             'href': 'link',
+             'text': 'Судан намерен пересмотреть соглашение с Россией по ...',
+             'is_match': True,
+             'ti_id': 2}
 
     lst = [dict1, dict2]
 
