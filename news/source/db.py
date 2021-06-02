@@ -37,30 +37,30 @@ class Website(Base):
 class TINews(Base):
     __tablename__ = "ti_news"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    time = Column(DateTime, default=None)
+    published_date = Column(DateTime, default=None)
     title = Column(String, default=None)
-    link = Column(String, default=None)
+    href = Column(String, default=None)
     text = Column(String, default=None)
     match = relationship("CompetitorsNews", backref=backref("matching_news"))
 
     def __repr__(self):
-        return f"{self.id} | {self.time} | {self.title}"
+        return f"{self.id} | {self.published_date} | {self.title}"
 
 
 class CompetitorsNews(Base):
     __tablename__ = "competitors_news"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    time = Column(DateTime, default=None)
+    published_date = Column(DateTime, default=None)
     title = Column(String, default=None)
-    link = Column(String, default=None)
+    href = Column(String, default=None)
     is_match = Column(Boolean, default=False)
     matching_news_id = Column(Integer, ForeignKey("ti_news.id"), default=None)
     website_id = Column(Integer, ForeignKey("website.id"), default=None)
 
     def __repr__(self):
         if self.is_match:
-            return f"{self.id} | link: {self.link} |is match: {self.is_match} | matching news: {self.matching_news.title}"
-        return f"{self.id} | link: {self.link} | is match: {self.is_match}"
+            return f"{self.id} | link: {self.href} |is match: {self.is_match} | matching news: {self.matching_news.title}"
+        return f"{self.id} | link: {self.href} | is match: {self.is_match}"
 
 
 def create_db():
@@ -93,19 +93,19 @@ def get_session_without_expire():
         session.close()
 
 
-def get_ti_news(session, time_: datetime, title_: str):
-    news = session.query(TINews).filter(and_(TINews.time == time_, TINews.title == title_)).first()
+def get_ti_news(session, published_date_: datetime, title_: str):
+    news = session.query(TINews).filter(and_(TINews.published_date == published_date_, TINews.title == title_)).first()
     return news
 
 
-def ti_news_exists(session, time_: datetime, title_: str) -> bool:
-    return get_ti_news(session, time_, title_) is not None
+def ti_news_exists(session, published_date_: datetime, title_: str) -> bool:
+    return get_ti_news(session, published_date_, title_) is not None
 
 
-def add_ti_news(id_: int, time_: datetime, title_: str, link_: str, text_: str):
+def add_ti_news(id_: int, published_date_: datetime, title_: str, href_: str, text_: str):
     with get_session_without_expire() as session:
-        if not ti_news_exists(session, time_, title_):
-            ti_news = TINews(id=id_, time=time_, title=title_, link=link_, text=text_)
+        if not ti_news_exists(session, published_date_, title_):
+            ti_news = TINews(id=id_, published_date=published_date_, title=title_, href=href_, text=text_)
             session.add(ti_news)
 
 
@@ -116,9 +116,9 @@ def add_ti_news_list(news: list):
             entry['published_date'] = datetime.fromisoformat(entry['published_date'])
 
         add_ti_news(id_=entry['id'],
-                    time_=entry['published_date'],
+                    published_date_=entry['published_date'],
                     title_=entry['title'],
-                    link_=entry['href'],
+                    href_=entry['href'],
                     text_=entry['text'])
 
 
@@ -134,23 +134,23 @@ def get_website_id(session, name_website_: str):
     return website.id
 
 
-def get_competitor_news(session, link):
-    news = session.query(CompetitorsNews).filter(CompetitorsNews.link == link).first()
+def get_competitor_news(session, href):
+    news = session.query(CompetitorsNews).filter(CompetitorsNews.href == href).first()
     return news
 
 
-def competitor_news_exists(session, link: str):
-    return get_competitor_news(session, link) is not None
+def competitor_news_exists(session, href: str):
+    return get_competitor_news(session, href) is not None
 
 
-def add_competitor_news(date_: datetime, title_: str, link_: str, website: str,
+def add_competitor_news(published_date_: datetime, title_: str, href_: str, website: str,
                         is_match_: bool, matching_news_id_: int = None):
     with get_session() as session:
-        if not competitor_news_exists(session, link_):
+        if not competitor_news_exists(session, href_):
             website_id_ = get_website_id(session, website)
-            comp_news = CompetitorsNews(time=date_,
+            comp_news = CompetitorsNews(published_date=published_date_,
                                         title=title_,
-                                        link=link_,
+                                        href=href_,
                                         is_match=is_match_,
                                         matching_news_id=matching_news_id_,
                                         website_id=website_id_)
@@ -169,18 +169,18 @@ def add_comp_news_list(news: list):
         if isinstance(entry['published_date'], str):
             entry['published_date'] = datetime.fromisoformat(entry['published_date'])
 
-        add_competitor_news(date_=entry['published_date'],
+        add_competitor_news(published_date_=entry['published_date'],
                             title_=entry['title'],
-                            link_=entry['href'],
+                            href_=entry['href'],
                             website=entry['from_site'],
                             is_match_=entry['is_match'],
                             matching_news_id_=entry['ti_id'])
 
 
 # return ti_news id by matching
-def get_matching_news_id(time_: datetime, title_: str):
+def get_matching_news_id(published_date_: datetime, title_: str):
     with get_session_without_expire() as session:
-        news = get_ti_news(session, time_, title_)
+        news = get_ti_news(session, published_date_, title_)
     return news.id
 
 
@@ -188,14 +188,14 @@ def get_all_ti_news(up_to_time: datetime = None):
     list_ti_news = []
     with get_session() as session:
         if up_to_time:
-            ti_news = session.query(TINews).filter(TINews.time > up_to_time).all()
+            ti_news = session.query(TINews).filter(TINews.published_date > up_to_time).all()
         else:
             ti_news = session.query(TINews).all()
         for news in ti_news:
             dic = {'id': news.id,
-                   'time': news.time,
+                   'published_date': news.published_date,
                    'title': news.title,
-                   'href': news.link,
+                   'href': news.href,
                    'text': news.text}
             list_ti_news.append(dic)
 
@@ -235,7 +235,7 @@ if __name__ == '__main__':
                 'id': 3,
                 'text': 'news text 1'}
 
-    ti_dict2 = {'published_date': '2021-06-02 16:33:00',
+    ti_dict2 = {'published_date': '2019-06-02 16:33:00',
                 'title': 'title2',
                 'href': 'link2',
                 'id': 4,
