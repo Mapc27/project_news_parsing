@@ -184,10 +184,13 @@ def get_matching_news_id(time_: datetime, title_: str):
     return news.id
 
 
-def get_ti_news_for_time(up_to_time: datetime):
+def get_all_ti_news(up_to_time: datetime = None):
     list_ti_news = []
     with get_session() as session:
-        ti_news = session.query(TINews).filter(TINews.time > up_to_time).all()
+        if up_to_time:
+            ti_news = session.query(TINews).filter(TINews.time > up_to_time).all()
+        else:
+            ti_news = session.query(TINews).all()
         for news in ti_news:
             dic = {'id': news.id,
                    'time': news.time,
@@ -267,4 +270,5 @@ if __name__ == '__main__':
 
     add_comp_news_list(lst)
 
-    print(get_ti_news_for_time(time1))
+    print(get_all_ti_news(time1))
+    print(get_all_ti_news())
