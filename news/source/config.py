@@ -10,18 +10,17 @@ KZN_PK_URL = 'https://prokazan.ru/news/list/'
 RU_PK_URL = 'https://prokazan.ru/tags/251/'
 IK_URL = 'https://inkazan.ru/api/v1/matters?type[]=NewsItem&date_end={date_time}.999%2B03:00'
 
-
+# первый элемент пустой, чтобы индексы совпадали с номером месяца
 months_names = ['', 'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
                 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
 
-
 headers = {
-        'Accept': '*/*',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                      ' (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
-    }
+    'Accept': '*/*',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                  ' (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
+}
 
 timeout = 30  # в секундах
-percentage_of_similarity = 15.0
+percentage_of_similarity = 15.0  # процент схожести двух новостей, если больше этого значения, то новости схожи

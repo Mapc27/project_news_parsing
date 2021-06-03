@@ -16,7 +16,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 import os
 
-DATABASE_NAME = 'parsed_news.sqlite'
+DATABASE_NAME = 'parsed_news.db'
 
 engine = create_engine(f'sqlite:///{DATABASE_NAME}', echo=True)
 Session = sessionmaker(bind=engine)
@@ -111,7 +111,6 @@ def add_ti_news(id_: int, published_date_: datetime, title_: str, href_: str, te
 
 def add_ti_news_list(news: list):
     for entry in news:
-
         if isinstance(entry['published_date'], str):
             entry['published_date'] = datetime.fromisoformat(entry['published_date'])
 
@@ -130,7 +129,6 @@ def add_website(session, website):
 
 def get_website_id(session, name_website_: str):
     website = session.query(Website).filter_by(name_website=name_website_).first()
-
     return website.id
 
 
@@ -162,7 +160,6 @@ def add_competitor_news(published_date_: datetime, title_: str, href_: str, webs
 
 def add_comp_news_list(news: list):
     for entry in news:
-
         if 'ti_id' not in entry.keys():
             entry['ti_id'] = None
 
@@ -181,7 +178,7 @@ def add_comp_news_list(news: list):
 def get_matching_news_id(published_date_: datetime, title_: str):
     with get_session_without_expire() as session:
         news = get_ti_news(session, published_date_, title_)
-    return news.id
+        return news.id
 
 
 def get_all_ti_news(up_to_time: datetime = None):
