@@ -5,19 +5,3 @@
 
 
 # useful for handling different item types with a single interface
-
-from itemadapter import ItemAdapter
-
-import news.source.match as match
-
-
-class NewsPipeline:
-    def __init__(self):
-        self.lst = []
-
-    def process_item(self, item, spider):
-        self.lst.append(item)
-
-    def close_spider(self, spider):
-        pass
-
