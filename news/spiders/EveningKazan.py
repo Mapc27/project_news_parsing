@@ -1,5 +1,4 @@
 import datetime
-import unicodedata
 
 import scrapy
 from scrapy.loader import ItemLoader
