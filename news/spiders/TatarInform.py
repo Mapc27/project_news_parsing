@@ -1,10 +1,9 @@
 import datetime
-import unicodedata
 
 import scrapy
 from scrapy.loader import ItemLoader
 
-from news.items import NewsItem
+from news.items import TatarInformNewsItem
 from news.source.config import months_names, TI_URL
 
 
@@ -50,12 +49,12 @@ class TatarInformSpider(scrapy.Spider):
                 break
 
         if not self.completed:
-            current_page = int(response.url.split("/")[-1])
-            yield response.follow(self.url + str(current_page+1), callback=self.parse)
+            next_page = response.css('div.pagination').css('a::attr(href)').extract_first()
+            # current_page = int(response.url.split("/")[-1])
+            # yield response.follow(self.url + str(current_page+1), callback=self.parse)
+            yield response.follow(next_page, callback=self.parse)
 
     def parse_news(self, response):
-        loader = ItemLoader(item=NewsItem(), selector=response)
-
         published_date = response.css('div.page-main__publish-data').css('a::text').extract_first().strip()
         published_date = published_date.replace(u'\xa0\xa0', u' ')
 
@@ -69,36 +68,17 @@ class TatarInformSpider(scrapy.Spider):
             self.completed = True
             return
 
-        # loader.add_value('from_site', self.name)
-        # loader.add_value('published_date', published_date.__str__())
-        # loader.add_css('title', 'h1.page-main__title')
-        # loader.add_value('href', response.url)
-        # loader.add_css('text', 'div.page-main__text')
-        #
-        # self.lst.append(loader.load_item())
-        #
-        # yield loader.load_item()
-        title = response.css('h1.page-main__title::text').extract_first().strip() \
-            .replace(u'\r', u'').replace(u'\n', u'')
+        loader = ItemLoader(item=TatarInformNewsItem(), selector=response)
 
-        title = unicodedata.normalize("NFKD", title)
+        loader.add_value('from_site', self.name)
+        loader.add_value('published_date', published_date)
+        loader.add_css('title', 'h1.page-main__title')
+        loader.add_value('href', response.url)
+        loader.add_css('text', 'div.page-main__text')
 
-        href = response.url
+        self.lst.append(loader.load_item())
 
-        text = ' '.join(response.css('div.page-main__text').css('p ::text').extract()).strip() \
-            .replace(u'\r', u'').replace(u'\n', u'').replace(u'\t', u'')
-        text = unicodedata.normalize("NFKD", text)
-
-        out = {
-            'from_site': self.name,
-            'published_date': published_date.__str__(),
-            'title': title,
-            'href': href,
-            'text': text,
-        }
-        print(out)
-        self.lst.append(out)
+        print(loader.load_item())
 
     def close(self, spider, reason):
         self.output_callback(self.lst)
-

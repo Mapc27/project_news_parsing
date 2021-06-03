@@ -1,10 +1,9 @@
 import datetime
-import unicodedata
 
 import scrapy
 from scrapy.loader import ItemLoader
 
-from news.items import NewsItem
+from news.items import CompetitorsNewsItem
 from news.source.config import RV_URL
 
 
@@ -55,7 +54,7 @@ class RealnoeVremyaSpider(scrapy.Spider):
             yield response.follow(self.start_urls[0] + next_page, callback=self.parse)
 
     def parse_news(self, response):
-        loader = ItemLoader(item=NewsItem(), selector=response)
+        loader = ItemLoader(item=CompetitorsNewsItem(), selector=response)
 
         published_date = response.css('div.dateLine').css('a::text').extract_first().strip()
         published_date = datetime.datetime.strptime(published_date, "%H:%M, %d.%m.%Y")
@@ -66,33 +65,15 @@ class RealnoeVremyaSpider(scrapy.Spider):
 
         text = ' '.join(response.css('div.detailCont').css('p ::text').extract())
 
-        # loader.add_value('from_site', self.name)
-        # loader.add_value('published_date', published_date.__str__())
-        # loader.add_css('title', 'div.detailCont > article > h1')
-        # loader.add_value('href', response.url)
-        # loader.add_value('text', text)
-        #
-        # self.lst.append(loader.load_item())
-        #
-        # yield loader.load_item()
-        title = response.css('div.detailCont').css('h1::text').extract_first().strip() \
-            .replace(u'\r', u'').replace(u'\n', u'')
-        title = unicodedata.normalize("NFKD", title)
+        loader.add_value('from_site', self.name)
+        loader.add_value('published_date', published_date)
+        loader.add_css('title', 'div.detailCont > article > h1')
+        loader.add_value('href', response.url)
+        loader.add_value('text', text)
 
-        href = response.url
+        self.lst.append(loader.load_item())
 
-        text = ' '.join(response.css('div.detailCont').css('p ::text').extract()) \
-            .replace(u'\r', u'').replace(u'\n', u'').replace(u'\t', u'')
-        text = unicodedata.normalize("NFKD", text)
-        out = {
-            'from_site': self.name,
-            'published_date': published_date.__str__(),
-            'title': title,
-            'href': href,
-            'text': text,
-        }
-        self.lst.append(out)
-        print(out)
+        print(loader.load_item())
 
     def close(self, spider, reason):
         self.output_callback(self.lst)
