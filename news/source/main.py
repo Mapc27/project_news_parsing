@@ -132,37 +132,22 @@ class Parse:
             print('=' * 100)
             print('=' * 100)
 
-            print('=' * 20, '[Достаю ТИ новости с БД ...]', '=' * 20)
+            # добавляем TI news в БД
+            print('=' * 20, '[Добавляю новости с ТатарИнформ в БД ...]', '=' * 20)
+            db.add_ti_news_list(self.scraped_news['TatarInform'])
 
             # достаём ti_news c БД
+            print('=' * 20, '[Достаю ТИ новости с БД ...]', '=' * 20)
             list_ti_news = db.get_all_ti_news()
 
             print('=' * 20, '[Успешно достал ТИ новости с БД ...]', '=' * 20)
 
-            if list_ti_news:
-                # ищем максимальный id ти новостей с БД
-                current_id = find_max_id(list_ti_news)
-            else:
-                current_id = 1
-
-            # проставляем id
-            for ti_news in self.scraped_news['TatarInform']:
-                ti_news['id'] = current_id
-                current_id += 1
-
             # if other_news == None
             if len_ti == all_news_count:
                 print('=' * 20, '[Нет новых новостей]', '=' * 20)
-                print('=' * 20, '[Добавляю, всё что есть в БД ...]', '=' * 20)
-
-                # добаляем self.scraped_news['TatarInform'] в БД
-                db.add_ti_news_list(self.scraped_news['TatarInform'])
 
                 self.print_end()
                 continue
-
-            # собираю всё в кучу
-            list_ti_news += self.scraped_news['TatarInform']
 
             print('=' * 20, '[Отправляю запросы на сравнение новостей ...]', '=' * 20)
 
@@ -189,10 +174,6 @@ class Parse:
             print('=' * 20, '[Добавляю competition news в БД ...]', '=' * 20)
             db.add_comp_news_list(self.result)
 
-            # добавляем TI news в БД
-            print('=' * 20, '[Добавляю новости с ТатарИнформ в БД ...]', '=' * 20)
-            db.add_ti_news_list(self.scraped_news['TatarInform'])
-
             # Вывод result
             print('=' * 20, 'result', '=' * 20)
             print('true_news_count = ', true_news_count)
@@ -214,7 +195,7 @@ class Parse:
 
 if __name__ == '__main__':
     configure_logging({'LOG_FORMAT': '%(levelname)s: %(message)s'})
-    initial_limit = datetime.datetime.now() - datetime.timedelta(minutes=30)
+    initial_limit = datetime.datetime.now() - datetime.timedelta(minutes=20)
 
     parser = Parse(limit=initial_limit)
     parser.run_process()

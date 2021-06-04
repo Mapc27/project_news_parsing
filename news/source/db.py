@@ -16,7 +16,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 import os
 
-DATABASE_NAME = 'parsed_news.db'
+DATABASE_NAME = 'parsed_news.sqlite'
 
 engine = create_engine(f'sqlite:///{DATABASE_NAME}')
 Session = sessionmaker(bind=engine)

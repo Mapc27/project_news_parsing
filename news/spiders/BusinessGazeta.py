@@ -24,25 +24,26 @@ class BusinessGazetaSpider(scrapy.Spider):
 
     def parse(self, response, **kwargs):
         for news in response.css('article.article-news')[1:]:
-            date = news.css('span.article-news__datetime').css('a::text').extract_first().strip()
+            date = news.css('span.article-news__datetime').css('a::text').extract_first()
 
-            date = date.split(' ')
+            if date is not None:
+                date = date.strip().split(' ')
 
-            day = int(date[0])
-            month = months_names.index(date[1].lower())
+                day = int(date[0])
+                month = months_names.index(date[1].lower())
 
-            # если дата только такая: 28 Мая
-            if len(date) == 2:
-                year = datetime.datetime.now().year
-            # иначе: 14 сентября 2020
-            else:
-                year = int(date[2])
+                # если дата только такая: 28 Мая
+                if len(date) == 2:
+                    year = datetime.datetime.now().year
+                # иначе: 14 сентября 2020
+                else:
+                    year = int(date[2])
 
-            date = datetime.datetime(year=year, month=month, day=day+1, hour=0, minute=0)
+                date = datetime.datetime(year=year, month=month, day=day+1, hour=0, minute=0)
 
-            if date <= self.limit_published_date:
-                self.completed = True
-                break
+                if date <= self.limit_published_date:
+                    self.completed = True
+                    break
 
             href = news.css('div.article-news__desc').css('a::attr(href)').extract_first()
             n = href.rfind('/')
