@@ -18,7 +18,7 @@ import os
 
 DATABASE_NAME = 'parsed_news.db'
 
-engine = create_engine(f'sqlite:///{DATABASE_NAME}', echo=True)
+engine = create_engine(f'sqlite:///{DATABASE_NAME}')
 Session = sessionmaker(bind=engine)
 
 Base = declarative_base()
@@ -102,10 +102,10 @@ def ti_news_exists(session, published_date_: datetime, title_: str) -> bool:
     return get_ti_news(session, published_date_, title_) is not None
 
 
-def add_ti_news(id_: int, published_date_: datetime, title_: str, href_: str, text_: str):
+def add_ti_news(published_date_: datetime, title_: str, href_: str, text_: str):
     with get_session_without_expire() as session:
         if not ti_news_exists(session, published_date_, title_):
-            ti_news = TINews(id=id_, published_date=published_date_, title=title_, href=href_, text=text_)
+            ti_news = TINews(published_date=published_date_, title=title_, href=href_, text=text_)
             session.add(ti_news)
 
 
@@ -114,8 +114,7 @@ def add_ti_news_list(news: list):
         if isinstance(entry['published_date'], str):
             entry['published_date'] = datetime.fromisoformat(entry['published_date'])
 
-        add_ti_news(id_=entry['id'],
-                    published_date_=entry['published_date'],
+        add_ti_news(published_date_=entry['published_date'],
                     title_=entry['title'],
                     href_=entry['href'],
                     text_=entry['text'])
@@ -221,10 +220,6 @@ if __name__ == '__main__':
         fill_websites()
 
     time1 = datetime.fromisoformat("2020-10-20")
-    # time2 = datetime.fromisoformat("2021-10-20")
-    # time3 = datetime.fromisoformat("2021-10-20")
-    # time4 = datetime.fromisoformat("2021-10-24")
-    # time5 = datetime.fromisoformat("2021-10-25")
 
     ti_dict1 = {'published_date': '2021-06-02 15:33:00',
                 'title': 'title1',
